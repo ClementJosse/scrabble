@@ -9,7 +9,7 @@ const routes = [
     component: MainMenu,
   },
   {
-    path: '/:pathMatch(.*)*', // attrape toutes les autres routes
+        path: '/:gameId', // attrape toutes les autres routes
     component: Game,
   }
 ]
