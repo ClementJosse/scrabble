@@ -1,6 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [],
+  content: [
+    './index.html',
+    './src/**/*.{vue,js,ts,jsx,tsx}',
+  ],
   theme: {
     extend: {
       colors: {
@@ -12,12 +15,11 @@ export default {
         'strongred': '#830C41',
         'base1': '#FFFAF3',
         'base2': '#FFF1DE',
-        'base3': "#FFD5A4",
-        'primary': "#AE3D00",
-        'secondary': "#FFA63F"
+        'base3': '#FFD5A4',
+        'primary': '#AE3D00',
+        'secondary': '#FFA63F'
       }
     },
   },
   plugins: [],
 }
-
