@@ -18,8 +18,11 @@ export default {
         'base3': '#FFD5A4',
         'primary': '#AE3D00',
         'secondary': '#FFA63F'
-      }
+      },
+      fontFamily: {
+        sans: ['Inter', 'sans-serif'],
+      },
     },
-  },
-  plugins: [],
+    plugins: [],
+  }
 }
