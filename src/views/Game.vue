@@ -26,6 +26,7 @@ import { getAuth, signInAnonymously } from 'firebase/auth'
 
 const route = useRoute()
 const gameId = route.params.gameId
+const gameData = ref(null)
 
 // Champs réactifs
 const isInLobby = ref(false)
@@ -52,6 +53,7 @@ const initialize = async () => {
         // Écoute des changements sur la partie dans Firebase
         onValue(partiesRef, (snapshot) => {
             const data = snapshot.val()
+            gameData.value = data
             if (data) {
                 // Les 3 valeurs possible du ".gameStatus"
                 isInGame.value = (data.gameStatus === 'ingame')
