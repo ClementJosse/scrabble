@@ -7,12 +7,12 @@
                 {{ currentUrl }}
             </span>
         </div>
-        <div class="mt-5 w-[350px] h-[400px] bg-base2 flex flex-col items-start rounded-xl gap-3">
+        <div class="mt-5 w-[350px] h-[400px] bg-base2 flex flex-col items-start rounded-xl gap-3 ">
             <span class="text-primary inter-semibold text-lg mt-3 text-center w-full">Joueurs:</span>
 
-            <div class="flex flex-col gap-3 ml-5 pr-2 overflow-y-auto max-h-[330px] ">
+            <div class="flex flex-col gap-3 pr-2 overflow-y-auto max-h-[330px] w-full custom-scrollbar">
                 <div v-for="(playerName, playerId) in props.gameData.idToPlayer" :key="playerId"
-                    class="flex flex-row px-3 py-1 bg-primary rounded-full text-xl inter-bold text-base1 gap-2 w-fit">
+                    class="flex flex-row px-3 ml-5 py-1 bg-primary rounded-full text-xl inter-bold text-base1 gap-2 w-fit">
                     {{ playerName }}
                 </div>
             </div>
@@ -43,3 +43,25 @@ function copyToClipboard() {
     Clipboard.copy(currentUrl)
 }
 </script>
+
+<style>
+.custom-scrollbar {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #FFA500 transparent; /* #FFA500 = bg-secondary */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #FFA500; /* couleur de bg-secondary */
+  border-radius: 15px;
+  border: none;
+}
+</style>
