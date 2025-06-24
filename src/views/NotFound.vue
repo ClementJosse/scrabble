@@ -2,8 +2,10 @@
 
 </script>
 
-<template >
-    <div>
-        not found
+<template>
+    <div class="flex items-center justify-center h-screen">
+        <div class="text-primary inter-bold text-3xl">
+            Partie indisponible
+        </div>
     </div>
 </template>

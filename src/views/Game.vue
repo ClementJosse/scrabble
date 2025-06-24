@@ -13,7 +13,7 @@
             Game
         </div>
         <div v-else>
-            Not found
+            <NotFound/>
         </div>
     </div>
 </template>
@@ -23,6 +23,7 @@ import { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { getDatabase, ref as dbRef, onValue, set, get, update, onDisconnect } from 'firebase/database'
 import { getAuth, signInAnonymously } from 'firebase/auth'
+import NotFound from './NotFound.vue'
 
 const route = useRoute()
 const gameId = route.params.gameId
