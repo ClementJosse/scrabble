@@ -1,6 +1,6 @@
 <template>
     <div class="flex flex-col items-center justify-center">
-        <div class="mt-[100px] bg-base2 flex flex-row items-center p-3 rounded-xl gap-3 w-[350px]">
+        <div class="mt-[150px] bg-base2 flex flex-row items-center p-3 rounded-xl gap-3 w-[350px]">
             <img src="@/assets/copy.svg" alt="copy link" class="cursor-pointer rounded-lg" @click="copyToClipboard()">
             <span
                 class="text-primary bg-base1 text-lg rounded-lg inter-semibold h-[40px] w-full flex items-center px-2">
