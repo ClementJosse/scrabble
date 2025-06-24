@@ -23,6 +23,9 @@ export default {
         sans: ['Inter', 'sans-serif'],
       },
     },
-    plugins: [],
+    plugins: [
+      require('tailwind-scrollbar'),
+    ],
+
   }
 }
