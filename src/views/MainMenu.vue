@@ -11,12 +11,19 @@
 
 <script setup>
 import router from '../router';
+import { useRoute } from 'vue-router'
 import { ref, onMounted } from 'vue'
 import { getDatabase, ref as dbRef, onValue, set, get, child, serverTimestamp } from 'firebase/database'
 import { getAuth, signInAnonymously } from 'firebase/auth'
 
 const auth = getAuth()
 let UID = null
+
+const route = useRoute()
+const gameId = route.params.gameId
+const database = getDatabase()
+const partieRef = dbRef(database, `/${gameId}`)
+const gameData = ref(null)
 
 // Fonction d'initialisation asynchrone
 const initialize = async () => {
@@ -25,6 +32,11 @@ const initialize = async () => {
         await signInAnonymously(auth)
         UID = auth.currentUser.uid
         console.log("Authentification anonyme :", UID)
+        // Écoute des changements sur la partie dans Firebase
+        onValue(partieRef, (snapshot) => {
+            const data = snapshot.val()
+            gameData.value = data
+        })
 
     } catch (error) {
         console.error("Erreur d'auth :", error.code, error.message)
