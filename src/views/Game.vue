@@ -4,7 +4,7 @@
     </div>
     <div v-else>
         <div v-if="isCreating && isLeader || !isPlayerInGame && isInLobby">
-            Login
+            <Login/>
         </div>
         <div v-else-if="isInLobby && isPlayerInGame">
             Lobby
@@ -24,6 +24,7 @@ import { ref, onMounted } from 'vue'
 import { getDatabase, ref as dbRef, onValue, set, get, update, onDisconnect } from 'firebase/database'
 import { getAuth, signInAnonymously } from 'firebase/auth'
 import NotFound from './NotFound.vue'
+import Login from './Login.vue'
 
 const route = useRoute()
 const gameId = route.params.gameId
