@@ -1,10 +1,10 @@
 <template>
     <div class="flex flex-col items-center ">
-        <button class="mt-[360px] px-10 py-3 bg-secondary rounded-lg text-base1 inter-bold text-xl"
+        <button class="mt-[300px] px-10 py-3 bg-secondary rounded-lg text-base1 inter-bold text-xl"
             @click='createGame()'>
             Créer une partie
         </button>
-        <span v-if="existe" class="text-secondary text-xl">Parties disponibles</span>
+        <span v-if="existe" class="mt-[90px] text-secondary text-xl">Parties disponibles</span>
         <button v-for="(partie, code) in gameData" :key="code" class="bg-base2 rounded-2xl px-6 py-2 text-center mt-7 w-[290px] h-[70px]" @click="joinGame(code)">              <!-- itération dans la clé (de la game), chaque partie (que je définis en l.15) -->
             <p class="text-2xl text-primary inter-bold">{{ Object.values(partie.idToPlayer).length }} Joueurs</p>                                                               <!-- nombre de value dans idToPlayer (length) = nb joueurs -->
             <p class="text-secondary font-medium">Créé par :<span class="text-primary inter-bold">{{ (partie.idToPlayer)[partie.leader]}}</span></p>                            <!-- affiche le id du UID = leader -->
@@ -78,7 +78,7 @@ const createGame = () => {
     }
 }
 const joinGame = (code) => {
-  router.push("/${code}")
+  router.push(`/${code}`)
 }
 
 </script>
