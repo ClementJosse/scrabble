@@ -28,6 +28,29 @@
 
 <script setup>
 import { Clipboard } from "v-clipboard"
+import { useRouter, useRoute } from 'vue-router'
+import { getDatabase, ref as dbRef, update } from 'firebase/database'
+
+const router = useRouter()
+const route =  useRoute()
+const database = getDatabase()
+const gameId = route.params.gameId
+
+async function launchGame() {
+  const partieRef = dbRef(database, `/${gameId}`)
+
+  try {
+    await update(partieRef, {
+      gameStatus: 'ingame'
+    })
+    console.log("gameStatus mis à jour")
+
+    router.push(`/${gameId}`)
+  } catch (error) {
+    console.error("Erreur :", error)
+  }
+}
+
 
 const props = defineProps({
     gameData: {
