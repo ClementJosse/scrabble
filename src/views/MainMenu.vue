@@ -50,7 +50,6 @@ const createGame = () => {
             set(gameRef, {
                 gameStatus: 'increation',
                 leader: UID,
-                playerList: [UID]
             });
 
             // Rediriger vers la nouvelle partie

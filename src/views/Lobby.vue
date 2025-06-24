@@ -18,7 +18,7 @@
             </div>
         </div>
         <div class="mt-5">
-            <button class="px-10 py-3 bg-secondary rounded-lg text-base1 inter-bold text-xl" @click='createGame()'>
+            <button class="px-10 py-3 bg-secondary rounded-lg text-base1 inter-bold text-xl" @click='launchGame()'>
                 Lancer la partie
             </button>
         </div>

@@ -4,7 +4,7 @@
     </div>
     <div v-else>
         <div v-if="isCreating && isLeader || !isPlayerInGame && isInLobby">
-            <Login/>
+            <Login :UID="UID" :gameData="gameData"/>
         </div>
         <div v-else-if="isInLobby && isPlayerInGame">
             <Lobby :gameData="gameData"/>
@@ -41,7 +41,7 @@ const isLoading = ref(true)
 
 // Configuration Firebase
 const database = getDatabase()
-const partiesRef = dbRef(database, `/${gameId}`)
+const partieRef = dbRef(database, `/${gameId}`)
 const auth = getAuth()
 let UID = null
 
@@ -54,7 +54,7 @@ const initialize = async () => {
         console.log("Authentification anonyme :", UID)
 
         // Écoute des changements sur la partie dans Firebase
-        onValue(partiesRef, (snapshot) => {
+        onValue(partieRef, (snapshot) => {
             const data = snapshot.val()
             gameData.value = data
             if (data) {
