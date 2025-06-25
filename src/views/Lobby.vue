@@ -41,14 +41,16 @@ const router = useRouter()
 const route = useRoute()
 const database = getDatabase()
 const gameId = route.params.gameId
+const plateau = {}
 const partieRef = dbRef(database, `/${gameId}`)
 
 async function launchGame() {
   try {
     await update(partieRef, {
-      gameStatus: 'ingame'
+      gameStatus: 'ingame',
+      plateau: plateau
     })
-    console.log("gameStatus mis à jour")
+    console.log("gameStatus mis à jour et plateau initialisé")
 
     router.push(`/${gameId}`)
   } catch (error) {
@@ -79,6 +81,10 @@ function removePlayer(playerId) {
 
 function copyToClipboard() {
   Clipboard.copy(currentUrl)
+}
+
+for (let i = 0; i < 7; i++) {
+  plateau[i] = "---------------"
 }
 </script>
 
