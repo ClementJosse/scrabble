@@ -41,14 +41,16 @@ const router = useRouter()
 const route = useRoute()
 const database = getDatabase()
 const gameId = route.params.gameId
-const plateau = {}
+const board = {}
+const playerLetters = {}
+const bagTile = {}
 const partieRef = dbRef(database, `/${gameId}`)
 
 async function launchGame() {
   try {
     await update(partieRef, {
       gameStatus: 'ingame',
-      plateau: plateau
+      board: board
     })
     console.log("gameStatus mis à jour et plateau initialisé")
 
@@ -84,7 +86,7 @@ function copyToClipboard() {
 }
 
 for (let i = 0; i < 7; i++) {
-  plateau[i] = "---------------"
+  board[i] = "---------------"
 }
 </script>
 
