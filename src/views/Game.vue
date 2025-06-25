@@ -7,7 +7,7 @@
             <Login :UID="UID" :gameData="gameData"/>
         </div>
         <div v-else-if="isInLobby && isPlayerInGame">
-            <Lobby :gameData="gameData"/>
+            <Lobby :UID="UID" :gameData="gameData"/>
         </div>
         <div v-else-if="isInGame && isPlayerInGame">
             Game
