@@ -7,7 +7,7 @@
         <span v-if="existe" class="mt-[90px] text-secondary text-xl">Parties disponibles</span>
         <button v-for="(partie, code) in gameData" :key="code" class="bg-base2 rounded-xl px-6 py-2 text-center mt-7 w-[290px] h-[70px]" @click="joinGame(code)">              <!-- itération dans la clé (de la game), chaque partie (que je définis en l.15) -->
             <p class="text-2xl text-primary inter-bold">{{ Object.values(partie.idToPlayer).length }} Joueurs</p>                                                               <!-- nombre de value dans idToPlayer (length) = nb joueurs -->
-            <p class="text-secondary font-medium">Créé par :<span class="text-primary inter-bold">{{ (partie.idToPlayer)[partie.leader]}}</span></p>                            <!-- affiche le id du UID = leader -->
+            <p class="text-secondary font-medium">Créé par:<span class="ml-1 text-primary inter-bold">{{ (partie.idToPlayer)[partie.leader]}}</span></p>                            <!-- affiche le id du UID = leader -->
         </button>
     </div>
 </template>
