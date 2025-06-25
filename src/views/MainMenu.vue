@@ -11,10 +11,10 @@
             @click='createGame()'>
             Créer une partie
         </button>
-        <span v-if="existe" class="mt-[90px] text-secondary text-xl">Parties disponibles</span>
+        <span v-if="exist" class="mt-[90px] text-secondary text-xl">Parties disponibles</span>
         <button v-for="(partie, code) in gameData" :key="code" class="bg-base2 rounded-xl px-6 py-2 text-center mt-7 w-[290px] h-[70px]" @click="joinGame(code)">              <!-- itération dans la clé (de la game), chaque partie (que je définis en l.15) -->
-            <p class="text-2xl text-primary inter-bold">{{ Object.values(partie.idToPlayer).length }} Joueurs</p>                                                               <!-- nombre de value dans idToPlayer (length) = nb joueurs -->
-            <p class="text-secondary font-medium">Créé par :<span class="text-primary inter-bold">{{ (partie.idToPlayer)[partie.leader]}}</span></p>                            <!-- affiche le id du UID = leader -->
+            <p class="text-2xl text-primary inter-bold">{{ Object.values(partie.idToPlayer|| {}).length }} Joueurs</p>                                                               <!-- nombre de value dans idToPlayer (length) = nb joueurs -->
+            <p class="text-secondary font-medium">Créé par :<span class="text-primary inter-bold">{{ (partie.idToPlayer|| {})[partie.leader]|| "Leader (en création)"}}</span></p>                            <!-- affiche le id du UID = leader -->
         </button>
     </div>
 </template>
@@ -31,7 +31,7 @@ let UID = null
 const database = getDatabase()
 const rootRef = dbRef(database, `/`)
 const gameData = ref(null)
-const existe = ref(false)
+const exist = ref(false)
 
 // Fonction d'initialisation asynchrone
 const initialize = async () => {
@@ -44,7 +44,7 @@ const initialize = async () => {
         onValue(rootRef, (snapshot) => {
             const data = snapshot.val()
             gameData.value = data
-            existe.value = data && Object.keys(data).length > 0
+            exist.value = data && Object.keys(data).length > 0
         })
 
     } catch (error) {
