@@ -68,7 +68,7 @@ function setupGame() {
 
   // Initialisation des scores et des lettres des joueurs
   for (const playerId of playerIds) {
-    scores[playerId] = [] // Tableau vide pour les scores des différents tours
+    scores[playerId] = [0] // Tableau vide pour les scores des différents tours
     playerLetters[playerId] = "" // String de 7 lettres tirées au hasard
     for (let i = 0; i < 7; i++) {
       const tile = drawRandomTile()
