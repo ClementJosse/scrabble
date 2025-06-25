@@ -16,17 +16,23 @@
           <span v-if="playerId === props.gameData.leader" class="text-secondary">
             ★
           </span>
-          <button v-else-if="props.UID === props.gameData.leader" class="text-red"
-            @click="removePlayer(playerId)">
+          <button v-else-if="props.UID === props.gameData.leader" class="text-red" @click="removePlayer(playerId)">
             ×
           </button>
         </div>
       </div>
     </div>
-    <div class="mt-5">
+    <div v-if="props.UID == props.gameData.leader" class="flex flex-col mt-5">
+      <span class="text-sm text-base1">En attente du créateur de la partie.</span>
       <button class="px-10 py-3 bg-secondary rounded-lg text-base1 inter-bold text-xl" @click='launchGame()'>
         Lancer la partie
       </button>
+    </div>
+    <div v-else class="flex flex-col mt-5">
+      <span class="text-sm text-primary">En attente du créateur de la partie.</span>
+      <div class="px-10 py-3 bg-base3 rounded-lg text-base1 inter-bold text-xl cursor-not-allowed">
+        Lancer la partie
+      </div>
     </div>
   </div>
 </template>
