@@ -4,16 +4,27 @@
     </div>
     <div v-else>
         <div v-if="isCreating && isLeader || !isPlayerInGame && isInLobby">
-            <Login :UID="UID" :gameData="gameData"/>
+            <Login :UID="UID" :gameData="gameData" />
         </div>
         <div v-else-if="isInLobby && isPlayerInGame">
-            <Lobby :UID="UID" :gameData="gameData"/>
+            <Lobby :UID="UID" :gameData="gameData" />
         </div>
         <div v-else-if="isInGame && isPlayerInGame">
-            Game
+            <div>
+                dico <!-- Futur composant dictionnaire à gauche-->
+            </div>
+            <div>
+                board <!-- Futur composant plateau + playerLetters -->
+            </div>
+            <div class="">
+                <TimerTurn/> <!-- Futur composant pour afficher les tours -->
+            </div>
+            <div>
+                stats <!-- Futur composant pour afficher les stats -->
+            </div>
         </div>
         <div v-else>
-            <NotFound/>
+            <NotFound />
         </div>
     </div>
 </template>
@@ -26,6 +37,7 @@ import { getAuth, signInAnonymously } from 'firebase/auth'
 import NotFound from './NotFound.vue'
 import Login from './Login.vue'
 import Lobby from './Lobby.vue'
+import TimerTurn from '../components/TimerTurn.vue'
 
 const route = useRoute()
 const gameId = route.params.gameId
