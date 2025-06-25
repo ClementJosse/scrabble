@@ -16,7 +16,7 @@
           <span v-if="playerId === props.gameData.leader" class="text-secondary">
             ★
           </span>
-          <button v-else-if="props.UID === props.gameData.leader" class="text-secondary"
+          <button v-else-if="props.UID === props.gameData.leader" class="text-red"
             @click="removePlayer(playerId)">
             ×
           </button>
@@ -35,7 +35,7 @@
 <script setup>
 import { Clipboard } from "v-clipboard"
 import { useRouter, useRoute } from 'vue-router'
-import { getDatabase, ref as dbRef, update } from 'firebase/database'
+import { getDatabase, ref as dbRef, update, serverTimestamp } from 'firebase/database'
 
 const router = useRouter()
 const route = useRoute()
@@ -43,18 +43,76 @@ const database = getDatabase()
 const gameId = route.params.gameId
 const board = {}
 const playerLetters = {}
-const bagTile = {}
+const playerOrder = {}
+const scores = {}
+const bagTile = { _: 2, A: 9, B: 2, C: 2, D: 3, E: 15, F: 2, G: 2, H: 2, I: 8, J: 1, K: 1, L: 5, M: 3, N: 6, O: 6, P: 2, Q: 1, R: 6, S: 6, T: 6, U: 6, V: 2, W: 1, X: 1, Y: 1, Z: 1 };
 const partieRef = dbRef(database, `/${gameId}`)
 
+function setupGame() {
+  // Récupération des IDs de joueurs
+  const playerIds = Object.keys(props.gameData.idToPlayer)
+
+  // Mélange aléatoire de l'ordre des joueurs
+  const shuffledPlayers = playerIds.sort(() => 0.5 - Math.random())
+
+  // Attribution de l'ordre des joueurs
+  shuffledPlayers.forEach((playerId, index) => {
+    playerOrder[index] = playerId
+  })
+
+  // Initialisation des scores et des lettres des joueurs
+  for (const playerId of playerIds) {
+    scores[playerId] = [] // Tableau vide pour les scores des différents tours
+    playerLetters[playerId] = "" // String de 7 lettres tirées au hasard
+    for (let i = 0; i < 7; i++) {
+      const tile = drawRandomTile()
+      if (tile) {
+        playerLetters[playerId] += tile
+      }
+    }
+  }
+
+  // Initialisation du plateau : 15 lignes de 15 tirets
+  for (let i = 0; i < 15; i++) {
+    board[i] = "---------------"
+  }
+}
+
+// Fonction utilitaire pour tirer une tuile aléatoire du sac
+function drawRandomTile() {
+  const availableTiles = Object.entries(bagTile).filter(([_, count]) => count > 0)
+  if (availableTiles.length === 0) return null
+
+  const totalTiles = availableTiles.reduce((sum, [_, count]) => sum + count, 0)
+  const rand = Math.floor(Math.random() * totalTiles)
+
+  let cumulative = 0
+  for (const [letter, count] of availableTiles) {
+    cumulative += count
+    if (rand < cumulative) {
+      bagTile[letter] -= 1
+      return letter
+    }
+  }
+
+  return null
+}
+
 async function launchGame() {
+  setupGame()
   try {
     await update(partieRef, {
       gameStatus: 'ingame',
-      board: board
+      board: board,
+      playerLetters: playerLetters,
+      playerOrder: playerOrder,
+      scores: scores,
+      bagTile: bagTile,
+      playerIndex: 0,
+      timestamp: serverTimestamp()
     })
     console.log("gameStatus mis à jour et plateau initialisé")
 
-    router.push(`/${gameId}`)
   } catch (error) {
     console.error("Erreur :", error)
   }
@@ -85,9 +143,7 @@ function copyToClipboard() {
   Clipboard.copy(currentUrl)
 }
 
-for (let i = 0; i < 7; i++) {
-  board[i] = "---------------"
-}
+
 </script>
 
 <style>
