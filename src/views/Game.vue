@@ -17,7 +17,7 @@
                 board <!-- Futur composant plateau + playerLetters -->
             </div>
             <div class="">
-                <TimerTurn/> <!-- Futur composant pour afficher les tours -->
+                <TimerTurn :UID="UID" :gameData="gameData"/> <!-- Futur composant pour afficher les tours -->
             </div>
             <div>
                 stats <!-- Futur composant pour afficher les stats -->
