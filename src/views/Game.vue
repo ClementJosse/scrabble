@@ -11,7 +11,7 @@
         </div>
         <div v-else-if="isInGame && isPlayerInGame">
             <div>
-                dico <!-- Futur composant dictionnaire à gauche-->
+                <Dico :isLeader="gameData.leader === UID"/>
             </div>
             <div>
                 board <!-- Futur composant plateau + playerLetters -->
@@ -38,6 +38,7 @@ import NotFound from './NotFound.vue'
 import Login from './Login.vue'
 import Lobby from './Lobby.vue'
 import TimerTurn from '../components/TimerTurn.vue'
+import Dico from '../components/Dico.vue'
 
 const route = useRoute()
 const gameId = route.params.gameId
