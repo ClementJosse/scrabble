@@ -17,7 +17,7 @@
                 board <!-- Futur composant plateau + playerLetters -->
             </div>
             <div class="">
-                <TimerTurn :UID="UID" :gameData="gameData"/> <!-- Futur composant pour afficher les tours -->
+                <TimerTurn :UID="UID" :gameData="gameData" :gameId="gameId"/> <!-- Futur composant pour afficher les tours -->
             </div>
             <div>
                 stats <!-- Futur composant pour afficher les stats -->
@@ -63,6 +63,7 @@ const initialize = async () => {
     try {
         // Authentification anonyme
         await signInAnonymously(auth)
+        
         UID = auth.currentUser.uid
         console.log("Authentification anonyme :", UID)
 
@@ -96,4 +97,6 @@ const initialize = async () => {
 onMounted(() => {
     initialize()
 })
+
+
 </script>
