@@ -1,13 +1,13 @@
 <template>
-  <div class="flex bg-base2 rounded-2xl px-8 py-6 justify-between items-center w-[330px] absolute top-6 right-6 shadow-md shadow-base3">
-    <div class="flex flex-col">
+  <div class="flex bg-base2 rounded-2xl px-4 py-3 justify-between items-center w-[330px] absolute top-6 right-6 shadow-md shadow-base3">
+    <div class="flex flex-col w-[150px]">
       <span class="text-secondary text-xl font-semibold">Tour</span>
-      <span class="text-primary text-5xl font-bold mt-1">{{ format(time) }}</span>
-      <button v-if="isCurrentPlayer" @click="passTurn"class="mt-4 font-medium ring ring-red fill-lightred text-red rounded bg-lightred w-[150px] ring-2">Passer le tour</button></div>
+      <span class="text-primary text-4xl font-bold -mt-[5px]">{{ format(time) }}</span>
+      <button v-if="isCurrentPlayer" @click="passTurn"class="mt-4 font-medium ring ring-red text-sm fill-lightred text-red rounded bg-lightred w-[120px] ring-2">Passer le tour</button></div>
     <div class="flex flex-col w-auto">
       <span class="text-primary font-semibold">Au tour de :</span>
       <div class="bg-primary text-base1 font-semibold px-4 py-1 rounded-full mt-1 w-fit">{{ currentName }}</div>
-      <span class="text-primary text-base mt-3">Suivant : <span class="font-semibold">{{ nextName }}</span></span>
+      <span class="text-primary text-sm mt-3">Suivant : <span class="font-semibold">{{ nextName }}</span></span>
     </div>
   </div>
 </template>
