@@ -1,6 +1,6 @@
 <template>
-    <div v-if="isLoading">
-        loading
+    <div v-if="isLoading" class="flex justify-center items-center h-screen">
+        <Loader/>
     </div>
     <div v-else>
         <div v-if="isCreating && isLeader || !isPlayerInGame && isInLobby">
@@ -39,6 +39,7 @@ import Login from './Login.vue'
 import Lobby from './Lobby.vue'
 import TimerTurn from '../components/TimerTurn.vue'
 import Dico from '../components/Dico.vue'
+import Loader from '../components/Loader.vue'
 
 const route = useRoute()
 const gameId = route.params.gameId
