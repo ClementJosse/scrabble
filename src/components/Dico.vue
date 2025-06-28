@@ -19,7 +19,9 @@
                 </div>
                 <div v-else class="flex flex-col h-full">
                     <div class="pt-[18px] text-sm text-secondary flex flex-col items-center flex-shrink-0">
-                        <span class="h-10 w-[195px] bg-base3 text-primary text-xl items-center justify-center flex font-semibold mb-6 rounded-lg"> Dictionnaire </span>
+                        <span
+                            class="h-10 w-[195px] bg-base3 text-primary text-xl items-center justify-center flex font-semibold mb-6 rounded-lg">
+                            Dictionnaire </span>
                         <span class="flex w-[295px]">*basé sur l'ODS 9 du 1er janvier 2024</span>
                         <div class="relative w-[295px]">
                             <input ref="input" v-model="mot" type="text" placeholder="Rechercher un mot..."
@@ -73,9 +75,9 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue'
 import Loader from './Loader.vue'
-import { liste_mots } from './liste_mots' // utilisé pour la validation et suggestions
 
-const ods9 = ref(null) // utilisé uniquement pour les définitions
+const ods9 = ref(null)              // Dictionnaire avec définitions
+const listeMots = ref([])           // Liste des mots sans définitions
 const isLoading = ref(true)
 const mot = ref("")
 const motValide = ref(false)
@@ -84,9 +86,7 @@ const suggestions = ref([])
 const isSearching = ref(false)
 
 const props = defineProps({
-    isLeader: {
-        type: Boolean
-    }
+    isLeader: Boolean
 })
 
 const isDicoVisible = ref(true)
@@ -94,6 +94,7 @@ const isDicoVisible = ref(true)
 function showDico() {
     isDicoVisible.value = !isDicoVisible.value
 }
+
 function showReturnMenu() {
     console.log("afficher le menu pour retourner au lobby")
 }
@@ -104,18 +105,21 @@ function clearInput() {
 }
 
 onMounted(() => {
-    loadDictionary()
+    loadDictionaries()
 })
 
-const loadDictionary = async () => {
+const loadDictionaries = async () => {
     try {
-        const response = await fetch('https://scrabble.cjosse.com/ods9.json')
-        const data = await response.json()
-        ods9.value = data
+        const [odsResponse, motsResponse] = await Promise.all([
+            fetch('https://scrabble.cjosse.com/ods9.json'),
+            fetch('https://scrabble.cjosse.com/liste_mots.json')
+        ])
+        ods9.value = await odsResponse.json()
+        listeMots.value = await motsResponse.json()
         isLoading.value = false
-        console.log("Dictionnaire chargé")
+        console.log("Dictionnaires chargés")
     } catch (error) {
-        console.error('Erreur lors du chargement du dictionnaire:', error)
+        console.error('Erreur lors du chargement des dictionnaires:', error)
         isLoading.value = false
     }
 }
@@ -157,19 +161,19 @@ function rechercherMot(motBrut) {
         return
     }
 
-    // Vérification dans liste_mots
-    motValide.value = liste_mots.includes(motNettoye)
+    // Vérification dans la liste des mots
+    motValide.value = listeMots.value.includes(motNettoye)
 
-    // Récupération de la définition depuis ods9 (si dispo)
-    definitions.value = motValide.value && ods9.value && ods9.value[motNettoye]
+    // Récupération de la définition si dispo
+    definitions.value = motValide.value && ods9.value?.[motNettoye]
         ? ods9.value[motNettoye]
         : []
 
-    // Suggestions (maximum 15 mots commençant par `motNettoye`)
-    suggestions.value = liste_mots
+    // Suggestions (maximum 30 mots commençant par `motNettoye`)
+    suggestions.value = listeMots.value
         .filter(word => word.startsWith(motNettoye) && word !== motNettoye)
         .sort((a, b) => a.length - b.length || a.localeCompare(b))
-        .slice(0, 30);
+        .slice(0, 30)
 }
 
 function copyWord(suggestion) {
