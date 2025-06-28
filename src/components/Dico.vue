@@ -18,19 +18,20 @@
                     Chargement du dictionnaire...
                 </div>
                 <div v-else class="flex flex-col h-full">
-                    <div class="pt-20 text-sm text-secondary flex flex-col items-center flex-shrink-0">
+                    <div class="pt-[18px] text-sm text-secondary flex flex-col items-center flex-shrink-0">
+                        <span class="h-10 w-[195px] bg-base3 text-primary text-xl items-center justify-center flex font-semibold mb-6 rounded-lg"> Dictionnaire </span>
                         <span class="flex w-[295px]">*basé sur l'ODS 9 du 1er janvier 2024</span>
                         <div class="relative w-[295px]">
                             <input ref="input" v-model="mot" type="text" placeholder="Rechercher un mot..."
                                 class="w-full rounded-lg shadow-md shadow-base3 p-3 pr-12 inter-bold text-xl text-bold bg-base1 border-none outline-none placeholder-base3 placeholder-opacity-100 placeholder:font-medium"
-                                :class="[mot === '' ? 'shadow-base3 text-primary' : motValide ? 'shadow-blue text-strongblue' : 'shadow-red text-strongred']" />
+                                :class="[mot === '' || isSearching ? 'shadow-base3 text-primary' : motValide ? 'shadow-blue text-strongblue' : 'shadow-red text-strongred']" />
                             <div v-if="mot" @click="clearInput"
                                 class="absolute right-3 top-1/2 transform -translate-y-1/2 cursor-pointer text-secondary text-2xl font-bold transition-colors">
                                 ×
                             </div>
                         </div>
                     </div>
-                    <div v-if="mot" class="pt-2 text-primary text-sm flex flex-col flex-grow min-h-0">
+                    <div v-if="mot && !isSearching" class="pt-2 text-primary text-sm flex flex-col flex-grow min-h-0">
                         <div class="flex-shrink-0">
                             <span v-if="motValide" class="flex justify-center text-lg text-strongblue font-semibold">est
                                 valide au Scrabble</span>
@@ -80,6 +81,7 @@ const mot = ref("")
 const motValide = ref(false)
 const definitions = ref([])
 const suggestions = ref([])
+const isSearching = ref(false)
 
 const props = defineProps({
     isLeader: {
@@ -98,6 +100,7 @@ function showReturnMenu() {
 
 function clearInput() {
     mot.value = ""
+    isSearching.value = false
 }
 
 onMounted(() => {
@@ -129,8 +132,19 @@ let debounceTimer = null
 
 watch(mot, (newMot) => {
     if (debounceTimer) clearTimeout(debounceTimer)
+
+    if (newMot.trim() === "") {
+        isSearching.value = false
+        motValide.value = false
+        definitions.value = []
+        suggestions.value = []
+        return
+    }
+
+    isSearching.value = true
     debounceTimer = setTimeout(() => {
         rechercherMot(newMot)
+        isSearching.value = false
     }, 250)
 })
 
