@@ -32,7 +32,24 @@
 
           <!-- le score par tour -->
           <div class="text-center font-semibold text-primary my-4 mr-3">Scores par tour</div>
-          <div class="bg-base1 rounded-xl shadow-md shadow-base3 h-32 mr-3 mb-4"></div>
+          <div class="bg-base1 rounded-xl shadow-md shadow-base3 mr-3 mb-4 overflow-auto w-[280px] max-w-full">
+            <table class="min-w-full text-sm text-left">
+              <thead>
+                <tr class="bg-base3 text-primary font-semibold">
+                  <th class="px-3 py-2">Tour</th>
+                  <th v-for="(turn, index) in maxTurns" :key="index" class="px-3 py-2">T{{ index + 1 }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="uid in playerOrder" :key="uid" class="border-t border-base3">
+                  <td class="px-3 py-1 font-bold" :class="uid === UID ? 'text-blue' : 'text-primary'">{{ getUsername(uid) }}</td>
+                  <td v-for="i in maxTurns" :key="i" class="px-3 py-1 text-primary font-semibold">
+                    {{ scores[uid] && scores[uid][i - 1] !== undefined ? scores[uid][i - 1] : '-' !== undefined ? scores[uid][`T${i}`] : '-' }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </Transition>
@@ -103,16 +120,17 @@ const updateChart = () => {
       trigger: "axis",
       backgroundColor: "#FFFAF3",
       borderRadius: 5,
-      textStyle: { 
+      textStyle: {
         color: '#FFD5A4',
         fontWeight: 'bold'
-       },
+      },
       formatter: (params) => {
         const sorted = params.sort((a, b) => b.data - a.data)
         return `${params[0].axisValue}<br/>` + sorted.map(p =>
           `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${p.color};"></span>
-           <span style="color:${p.color}; font-weight:600">${p.seriesName} : ${p.data}</span> <br/>`).join("");}
-            },
+           <span style="color:${p.color}; font-weight:600">${p.seriesName} : ${p.data}</span> <br/>`).join("");
+      }
+    },
     grid: {
       top: "10%", left: "5%", right: "10%", bottom: "10%", containLabel: true
     },
@@ -143,6 +161,12 @@ const updateChart = () => {
 
 onMounted(updateChart)
 watch(() => props.gameData, updateChart, { deep: true })
+
+//pour le score par tour
+const maxTurns = computed(() => {
+  const allTurns = playerOrder.value.map(uid => Object.keys(scores.value[uid] || {}).length)
+  return Math.max(...allTurns, 0)
+})
 
 </script>
 
