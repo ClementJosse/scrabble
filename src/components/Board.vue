@@ -32,6 +32,10 @@
                                     <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
                                         @mousedown.stop="preventPan">
                                         {{ element.letter }}
+                                        <span
+                                            class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">{{ letterToValue[element.letter]
+                                            }}</span>
+
                                     </div>
                                 </template>
                             </Draggable>
@@ -63,6 +67,9 @@
                                 <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
                                     @mousedown.stop="preventPan">
                                     {{ element.letter }}
+                                    <span
+                                        class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">{{ letterToValue[element.letter]
+                                        }}</span>
                                 </div>
                             </template>
                         </Draggable>
@@ -151,6 +158,15 @@ const boardCell = [
     ['', 'M2', '', '', '', 'L3', '', '', '', 'L3', '', '', '', 'M2', ''],
     ['M3', '', '', 'L2', '', '', '', 'M3', '', '', '', 'L2', '', '', 'M3'],
 ]
+
+const letterToValue = {
+    A: 1, B: 3, C: 3, D: 2, E: 1,
+    F: 4, G: 2, H: 4, I: 1, J: 8,
+    K: 10, L: 1, M: 2, N: 1, O: 1,
+    P: 3, Q: 8, R: 1, S: 1, T: 1,
+    U: 1, V: 4, W: 10, X: 10, Y: 10, Z: 10
+};
+
 
 // Initialisation de rackSlots comme ref indépendante
 const rackSlots = ref([])
