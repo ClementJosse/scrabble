@@ -10,9 +10,9 @@
       <div v-if="isStatsVisible"
         class="bg-base2 w-[330px] z-10 shadow-md shadow-base3 rounded-3xl pl-4 py-6 mt-[90px] h-[calc(100vh-210px)] flex flex-col">
         <span
-          class="h-10 w-[195px] bg-base3 text-primary text-xl items-center justify-center flex font-semibold mb-2 rounded-lg ml-[50px]">Statistiques</span>
+          class="h-[60px] w-[195px] bg-base3 text-primary text-xl items-center justify-center flex font-semibold rounded-lg ml-[50px]">Statistiques</span>
         <div class="overflow-y-auto flex-grow min-h-0 custom-scrollbar mt-4">
-          <div class="text-center font-semibold text-primary mb-2">Classement</div>
+          <div class="text-center text-rg text-center text-primary font-medium mt-4">Classement</div>
           <div class="bg-base1 rounded-xl shadow-md shadow-base3  w-[190px] mx-auto">
             <div v-for="(uid, index) in sortedPlayers" :key="uid"
               :class="['flex justify-between items-center py-[12px]', index % 2 === 0 ? 'bg-transparent' : 'bg-base2 ']">
@@ -25,13 +25,13 @@
             </div>
           </div>
           <!-- graph -->
-          <div class="text-center  font-semibold text-primary my-4 mr-3">Graphique</div>
+          <div class="text-center text-rg text-center text-primary font-medium mt-4 mr-3">Graphique</div>
           <div class="bg-base1 rounded-xl shadow-md shadow-base3 h-[200px] mr-3">
             <v-chart :option="chartOptions" autoresize class="h-full w-full" />
           </div>
 
           <!-- le score par tour -->
-          <div class="text-center font-semibold text-primary my-4 mr-3">Scores par tour</div>
+          <div class="text-center text-rg text-center text-primary font-medium mt-4 mr-3">Scores par tour</div>
           <div class="bg-base1 rounded-xl shadow-md shadow-base3 mr-3 mb-4 overflow-auto w-[280px] max-w-full">
             <table class="min-w-full text-sm text-left">
               <thead>
@@ -42,9 +42,11 @@
               </thead>
               <tbody>
                 <tr v-for="uid in playerOrder" :key="uid" class="border-t border-base3">
-                  <td class="px-3 py-1 font-bold" :class="uid === UID ? 'text-blue' : 'text-primary'">{{ getUsername(uid) }}</td>
+                  <td class="px-3 py-1 font-bold" :class="uid === UID ? 'text-secondary' : 'text-primary'">{{
+                    getUsername(uid) }}</td>
                   <td v-for="i in maxTurns" :key="i" class="px-3 py-1 text-primary font-semibold">
-                    {{ scores[uid] && scores[uid][i - 1] !== undefined ? scores[uid][i - 1] : '-' !== undefined ? scores[uid][`T${i}`] : '-' }}
+                    {{ scores[uid] && scores[uid][i - 1] !== undefined ? scores[uid][i - 1] : '-' !== undefined ?
+                      scores[uid][`T${i}`] : '-' }}
                   </td>
                 </tr>
               </tbody>
@@ -55,7 +57,6 @@
     </Transition>
   </div>
 </template>
-
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
@@ -121,14 +122,14 @@ const updateChart = () => {
       backgroundColor: "#FFFAF3",
       borderRadius: 5,
       textStyle: {
-        color: '#FFD5A4',
-        fontWeight: 'bold'
+        color: '#AE3D00',
+        fontWeight: 700
       },
       formatter: (params) => {
         const sorted = params.sort((a, b) => b.data - a.data)
         return `${params[0].axisValue}<br/>` + sorted.map(p =>
           `<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:${p.color};"></span>
-           <span style="color:${p.color}; font-weight:600">${p.seriesName} : ${p.data}</span> <br/>`).join("");
+           <span style="color:${p.color}; font-weight:550">${p.seriesName} : ${p.data}</span> <br/>`).join("");
       }
     },
     grid: {
@@ -138,9 +139,17 @@ const updateChart = () => {
       type: "category",
       boundaryGap: false,
       data: labels,
+      axisLabel: {
+        color: '#AE3D00' // Remplace par la couleur que tu veux (hex, rgb, nom)
+      }
+
     },
     yAxis: {
       type: "value",
+      axisLabel: {
+        color: '#AE3D00' // Remplace par la couleur que tu veux (hex, rgb, nom)
+      }
+
     },
     series: data.playerOrder.map(uid => {
       const playerScores = data.scores[uid] || {}
@@ -153,6 +162,7 @@ const updateChart = () => {
         smooth: false,
         symbol: "circle",
         symbolSize: 6,
+        
 
       }
     })
