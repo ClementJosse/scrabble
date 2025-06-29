@@ -20,7 +20,7 @@
                 <TimerTurn :UID="UID" :gameData="gameData" :gameId="gameId"/> <!-- Futur composant pour afficher les tours -->
             </div>
             <div>
-                stats <!-- Futur composant pour afficher les stats -->
+                <Stats :UID="UID" :gameData="gameData"/>
             </div>
         </div>
         <div v-else>
@@ -40,6 +40,7 @@ import Lobby from './Lobby.vue'
 import TimerTurn from '../components/TimerTurn.vue'
 import Dico from '../components/Dico.vue'
 import Loader from '../components/Loader.vue'
+import Stats from '../components/Stats.vue'
 
 const route = useRoute()
 const gameId = route.params.gameId

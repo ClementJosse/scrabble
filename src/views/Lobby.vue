@@ -115,7 +115,8 @@ async function launchGame() {
       scores: scores,
       bagTile: bagTile,
       playerIndex: 0,
-      timestamp: serverTimestamp()
+      timestamp: serverTimestamp(),
+      turn: 1
     })
     console.log("gameStatus mis à jour et plateau initialisé")
 
