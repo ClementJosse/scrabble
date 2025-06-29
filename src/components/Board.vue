@@ -1,5 +1,5 @@
 <template>
-    <div class="flex flex-col items-center gap-6 p-4">
+    <div class="flex flex-col items-center gap-6 p-4 mb-[140px]">
         <!-- Plateau de jeu -->
         <div class="grid grid-cols-[repeat(15,3rem)] p-3 bg-base2 rounded-xl shadow-base3 shadow-md">
             <template v-for="(row, rowIndex) in 15" :key="'row-' + rowIndex">
@@ -10,7 +10,8 @@
                         <div v-if="boardCell[rowIndex][colIndex] !== ''"
                             class="absolute inset-0 flex items-center justify-center text-xs font-bold pointer-events-none">
                             <span v-if="boardCell[rowIndex][colIndex] === 'M3'" class="text-strongred text-lg">M3</span>
-                            <span v-else-if="boardCell[rowIndex][colIndex] === 'L3'" class="text-strongblue text-lg">L3</span>
+                            <span v-else-if="boardCell[rowIndex][colIndex] === 'L3'"
+                                class="text-strongblue text-lg">L3</span>
                             <span v-else-if="boardCell[rowIndex][colIndex] === 'M2'" class="text-red text-lg">M2</span>
                             <span v-else-if="boardCell[rowIndex][colIndex] === 'L2'" class="text-blue text-lg">L2</span>
                             <span v-else-if="boardCell[rowIndex][colIndex] === '★'" class="text-red text-xl">★</span>
@@ -18,11 +19,11 @@
 
                         <!-- Zone draggable par-dessus -->
                         <Draggable :list="board[rowIndex][colIndex]" group="letters"
-                            class="absolute inset-0 flex items-center justify-center h-12 w-12" itemKey="id"
-                            :clone="cloneLetter" :sort="false">
+                            class="flex items-center justify-center h-12 w-12" itemKey="id" :clone="cloneLetter"
+                            :sort="false">
                             <template #item="{ element }">
                                 <div
-                                    class="h-12 w-12 select-none flex items-center justify-center bg-white border-2 border-gray-300 transition-all duration-200 cursor-grab hover:border-blue-600 hover:opacity-90 active:cursor-grabbing active:opacity-60 relative z-10 font-bold">
+                                    class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary text-xl">
                                     {{ element.letter }}
                                 </div>
                             </template>
@@ -33,25 +34,41 @@
         </div>
 
         <!-- Rack des lettres - 7 cellules fixes -->
-        <div class="flex gap-2 bg-amber-100 p-5 rounded-lg">
-            <template v-for="(slot, index) in rackSlots" :key="'rack-' + index">
-                <Draggable :list="slot" group="letters" itemKey="id" :clone="cloneLetter"
-                    class="h-12 w-12 flex items-center justify-center border-2 border-gray-300 bg-white"
-                    :class="{ 'opacity-50': slot.length === 0 }" @change="onRackChange">
-                    <template #item="{ element }">
-                        <div
-                            class="h-12 w-12 select-none flex items-center justify-center bg-white transition-all duration-200 cursor-grab hover:border-blue-600 hover:opacity-90 active:cursor-grabbing active:opacity-60 font-bold">
-                            {{ element.letter }}
-                        </div>
+        <div
+            class="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-row bg-base2 p-5 w-[745px] h-[115px] justify-between items-center rounded-xl shadow-base3 shadow-md">
+            <div class="w-[150px] flex justify-center">
+                <div
+                    class="w-[80px] h-[80px] flex justify-center items-center rounded-full bg-base1 text-2xl font-bold text-secondary gap-1">
+                    <img src="@/assets/bag.svg" alt="bag of letters" class="cursor-pointer " @click="showBag()" />
+                    32
+                </div>
+            </div>
+            <div class="flex flex-col">
+                <img src="@/assets/retrieve.svg" alt="retrieve letters" class="cursor-pointer relative h-8"
+                    @click="retrieveLetters()" />
+                <div class="flex flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-fit">
+                    <template v-for="(slot, index) in rackSlots" :key="'rack-' + index">
+                        <Draggable :list="slot" group="letters" itemKey="id" :clone="cloneLetter"
+                            class="h-11 w-11 flex items-center justify-center bg-base2 rounded-lg">
+                            <template #item="{ element }">
+                                <div
+                                    class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary text-xl">
+                                    {{ element.letter }}
+                                </div>
+                            </template>
+                        </Draggable>
                     </template>
-                    <template #default>
-                        <div v-if="slot.length === 0" class="h-12 w-12 flex items-center justify-center text-gray-400">
-                            _
-                        </div>
-                    </template>
-                </Draggable>
-            </template>
+                </div>
+                <span class="relative h-2 w-full bg-secondary -top-[8px]"></span>
+                <img src="@/assets/shuffle.svg" alt="retrieve letters" class="cursor-pointer relative -top-7 h-8"
+                    @click="retrieveLetters()" />
+            </div>
+            <div class="w-[150px] flex flex-col justify-center items-center gap-2">
+                <span class="text-2xl text-strongblue font-bold">51pts</span>
+                <button class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">Jouer le coup</button>
+            </div>
         </div>
+
     </div>
 </template>
 
