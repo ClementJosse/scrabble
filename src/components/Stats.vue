@@ -17,8 +17,8 @@
               :class="['flex justify-between items-center py-[12px]', index % 2 === 0 ? 'bg-transparent' : 'bg-base2 ']">
               <div class="flex gap-2 pl-4">
                 <span class="font-semibold text-primary">{{ index + 1 }}</span>
-                <span :class="uid === UID ? 'bg-primary text-base1 text-xs font-semibold px-2 py-1 rounded-full' :
-                'bg-base3 text-primary text-xs font-semibold px-2 py-1 rounded-full'">{{ getUsername(uid) }}</span>
+                <span :class="uid === UID ? 'bg-base3 text-primary text-xs font-semibold px-2 py-1 rounded-full' :
+                'bg-primary text-base1 text-xs font-semibold px-2 py-1 rounded-full'">{{ getUsername(uid) }}</span>
               </div>
               <span class="font-semibold text-primary pr-4">{{ getScore(uid) }}pts</span>
             </div>
@@ -26,6 +26,8 @@
           <!-- graph -->
           <div class="text-center  font-semibold text-primary my-4 mr-3">Graphique</div>
           <div class="bg-base1 rounded-xl shadow-md shadow-base3 h-32 mr-3"></div>
+
+          
           <!-- le score par tour -->
           <div class="text-center font-semibold text-primary my-4 mr-3">Scores par tour</div>
           <div class="bg-base1 rounded-xl shadow-md shadow-base3 h-40 mr-3 mb-4"></div>
