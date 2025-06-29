@@ -14,7 +14,7 @@
                 <Dico :isLeader="gameData.leader === UID"/>
             </div>
             <div>
-                board <!-- Futur composant plateau + playerLetters -->
+                <Board :UID="UID" :gameData="gameData" :gameId="gameId"/> 
             </div>
             <div class="">
                 <TimerTurn :UID="UID" :gameData="gameData" :gameId="gameId"/> <!-- Futur composant pour afficher les tours -->
@@ -41,6 +41,7 @@ import TimerTurn from '../components/TimerTurn.vue'
 import Dico from '../components/Dico.vue'
 import Loader from '../components/Loader.vue'
 import Stats from '../components/Stats.vue'
+import Board from '../components/Board.vue'
 
 const route = useRoute()
 const gameId = route.params.gameId
