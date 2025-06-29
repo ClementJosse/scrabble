@@ -35,7 +35,7 @@
 
         <!-- Rack des lettres - 7 cellules fixes -->
         <div
-            class="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-row bg-base2 p-5 w-[745px] h-[115px] justify-between items-center rounded-xl shadow-base3 shadow-md">
+            class="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-row bg-base2 p-5 w-[745px] h-[115px] justify-between items-center rounded-xl shadow-base3 shadow-md z-50">
             <div class="w-[150px] flex justify-center">
                 <div
                     class="w-[80px] h-[80px] flex justify-center items-center rounded-full bg-base1 text-2xl font-bold text-secondary gap-1">
@@ -65,7 +65,8 @@
             </div>
             <div class="w-[150px] flex flex-col justify-center items-center gap-2">
                 <span class="text-2xl text-strongblue font-bold">51pts</span>
-                <button class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">Jouer le coup</button>
+                <button
+                    class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">Jouer le coup</button>
             </div>
         </div>
 

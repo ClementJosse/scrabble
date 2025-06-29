@@ -1,5 +1,5 @@
 <template>
-    <div class="fixed top-[125px] left-6">
+    <div class="fixed top-[125px] left-6 z-40">
         <div v-if="isLeader" class="mb-10 ml-4 h-10">
             <img src="@/assets/lobby.svg" alt="return to lobby" class="cursor-pointer rounded-lg"
                 @click="showReturnMenu()" />
@@ -7,11 +7,11 @@
         <div v-else class="mb-10 ml-4 h-10">
 
         </div>
-        <img src="@/assets/dico.svg" alt="return to lobby" class="cursor-pointer rounded-lg ml-4 relative z-20"
+        <img src="@/assets/dico.svg" alt="return to lobby" class="cursor-pointer rounded-lg ml-4 relative z-50"
             @click="showDico()" />
         <Transition :duration="550" name="toggletransition">
             <div v-if="isDicoVisible"
-                class="bg-base2 w-[330px] relative z-10 -top-[60px] h-[calc(100vh-225px)] shadow-md shadow-base3 rounded-xl overflow-hidden flex flex-col">
+                class="bg-base2 w-[330px] relative z-10 -top-[60px] h-[calc(100vh-210px)] shadow-md shadow-base3 rounded-xl overflow-hidden flex flex-col">
                 <div v-if="isLoading"
                     class="flex justify-center items-center h-[calc(100vh-350px)] flex-col text-secondary text-lg gap-5">
                     <Loader />
