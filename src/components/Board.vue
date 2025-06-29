@@ -84,14 +84,55 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import Draggable from 'vuedraggable'
+
+const props = defineProps({
+    UID: String,
+    gameData: Object,
+    gameId: String
+})
 
 const board = ref(
     Array.from({ length: 15 }, () =>
         Array.from({ length: 15 }, () => [])
     )
 )
+
+// Fonction pour mettre à jour le board local (pour usage futur)
+const updateBoard = (newBoardData) => {
+    if (newBoardData && Array.isArray(newBoardData)) {
+        // Réinitialiser le board local
+        for (let row = 0; row < 15; row++) {
+            for (let col = 0; col < 15; col++) {
+                const rowString = newBoardData[row] || '---------------'
+                const letter = rowString[col] || '-'
+
+                if (letter === '-') {
+                    // Cellule vide
+                    board.value[row][col] = []
+                } else {
+                    // Cellule avec une lettre
+                    board.value[row][col] = [{
+                        id: `board-${row}-${col}-${Date.now()}`, // ID unique pour chaque lettre sur le board
+                        letter: letter
+                    }]
+                }
+            }
+        }
+    }
+}
+
+// Initialisation du board au montage du composant
+const initializeBoard = () => {
+    const gameBoard = props.gameData?.board
+    if (gameBoard) {
+        updateBoard(gameBoard)
+    }
+}
+
+// Initialiser le board immédiatement
+initializeBoard()
 
 const boardCell = [
     ['M3', '', '', 'L2', '', '', '', 'M3', '', '', '', 'L2', '', '', 'M3'],
@@ -111,15 +152,60 @@ const boardCell = [
     ['M3', '', '', 'L2', '', '', '', 'M3', '', '', '', 'L2', '', '', 'M3'],
 ]
 
-const rackSlots = ref([
-    [{ id: 1, letter: 'A' }],
-    [{ id: 2, letter: 'B' }],
-    [{ id: 3, letter: 'C' }],
-    [{ id: 4, letter: 'D' }],
-    [{ id: 5, letter: 'E' }],
-    [],
-    []
-])
+// Initialisation de rackSlots comme ref indépendante
+const rackSlots = ref([])
+
+// Fonction pour convertir une chaîne de caractères en format compatible avec Draggable
+const convertStringToSlots = (playerLetters) => {
+    const slots = []
+
+    // Créer 7 slots (nombre standard pour le Scrabble)
+    for (let i = 0; i < 7; i++) {
+        if (i < playerLetters.length) {
+            // Si on a une lettre à cette position, créer un slot avec cette lettre
+            slots.push([{
+                id: Date.now() + i + Math.random(), // ID unique basé sur le timestamp + random
+                letter: playerLetters[i]
+            }])
+        } else {
+            // Slot vide
+            slots.push([])
+        }
+    }
+
+    return slots
+}
+
+// Fonction pour mettre à jour rackSlots (pour usage futur)
+const updateRackSlots = (newPlayerLetters) => {
+    rackSlots.value = convertStringToSlots(newPlayerLetters)
+}
+
+// Initialisation de rackSlots au montage du composant
+const initializeRackSlots = () => {
+    const playerLetters = props.gameData?.playerLetters?.[props.UID] || 'EBARPVC'
+    rackSlots.value = convertStringToSlots(playerLetters)
+}
+
+// Initialiser rackSlots immédiatement
+initializeRackSlots()
+
+// Watcher pour surveiller les modifications de gameData.board
+watch(
+    () => props.gameData?.board,
+    (newBoard, oldBoard) => {
+        // Vérifier si le board a réellement changé (éviter les faux positifs)
+        if (newBoard && JSON.stringify(newBoard) !== JSON.stringify(oldBoard)) {
+            // Mettre à jour le board local
+            updateBoard(newBoard)
+
+            // Mettre à jour rackSlots
+            const playerLetters = props.gameData?.playerLetters?.[props.UID] || 'EBARPVC'
+            updateRackSlots(playerLetters)
+        }
+    },
+    { deep: true } // Surveiller les modifications profondes du board
+)
 
 const cloneLetter = (original) => original ? { ...original } : null
 
