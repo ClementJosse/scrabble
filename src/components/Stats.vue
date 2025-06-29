@@ -12,13 +12,13 @@
         <span class="h-10 w-[195px] bg-base3 text-primary text-xl items-center justify-center flex font-semibold mb-2 rounded-lg ml-[50px]">Statistiques</span>
         <div class="overflow-y-auto flex-grow min-h-0 custom-scrollbar mt-4">
           <div class="text-center font-semibold text-primary mb-2">Classement</div>
-          <div class="bg-base1 rounded-xl shadow-md shadow-base3 pt-4 pb-1 w-[190px] mx-auto">
+          <div class="bg-base1 rounded-xl shadow-md shadow-base3  w-[190px] mx-auto">
             <div v-for="(uid, index) in sortedPlayers" :key="uid"
-              :class="['flex justify-between items-center mb-3', index % 2 === 0 ? 'bg-base2 py-[12px]' : 'bg-transparent py-1']">
-              <div class="flex items-center gap-2 pl-4">
+              :class="['flex justify-between items-center py-[12px]', index % 2 === 0 ? 'bg-transparent' : 'bg-base2 ']">
+              <div class="flex gap-2 pl-4">
                 <span class="font-semibold text-primary">{{ index + 1 }}</span>
-                <span class="bg-primary text-white text-xs font-semibold px-2 py-1 rounded-full">{{
-                  getUsername(uid)}}<span v-if="uid === UID"> (moi)</span></span>
+                <span :class="uid === UID ? 'bg-primary text-base1 text-xs font-semibold px-2 py-1 rounded-full' :
+                'bg-base3 text-primary text-xs font-semibold px-2 py-1 rounded-full'">{{ getUsername(uid) }}</span>
               </div>
               <span class="font-semibold text-primary pr-4">{{ getScore(uid) }}pts</span>
             </div>
