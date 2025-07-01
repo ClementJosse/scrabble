@@ -32,8 +32,8 @@
                                     <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
                                         @mousedown.stop="preventPan">
                                         {{ element.letter }}
-                                        <span
-                                            class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">{{ letterToValue[element.letter]
+                                        <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">{{
+                                            letterToValue[element.letter]
                                             }}</span>
 
                                     </div>
@@ -58,22 +58,20 @@
             <div class="flex flex-col">
                 <img src="@/assets/retrieve.svg" alt="retrieve letters" class="cursor-pointer relative h-8"
                     @click="retrieveLetters()" />
-                <div class="flex flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-fit">
-                    <template v-for="(slot, index) in rackSlots" :key="'rack-' + index">
-                        <Draggable :list="slot" group="letters" itemKey="id" :clone="cloneLetter"
-                            class="h-11 w-11 flex items-center justify-center bg-base2 rounded-lg" @start="onDragStart"
-                            @end="onDragEnd">
-                            <template #item="{ element }">
-                                <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
-                                    @mousedown.stop="preventPan">
-                                    {{ element.letter }}
-                                    <span
-                                        class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">{{ letterToValue[element.letter]
-                                        }}</span>
-                                </div>
-                            </template>
-                        </Draggable>
-                    </template>
+                <div class="flex justify-center flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-[355px]">
+                    <Draggable v-model="rackLetters" group="letters" itemKey="id" :clone="cloneLetter"
+                        class="flex flex-row gap-1 w-full justify-center" @start="onDragStart" @end="onDragEnd" @change="handleRackChange">
+                        <template #item="{ element, index }">
+                            <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
+                                @mousedown.stop="preventPan" @dragover.prevent="handleDragOver(index)"
+                                @drop="handleDrop(index)" :data-index="index">
+                                {{ element.letter }}
+                                <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">{{
+                                    letterToValue[element.letter]
+                                    }}</span>
+                            </div>
+                        </template>
+                    </Draggable>
                 </div>
                 <span class="relative h-2 w-full bg-secondary -top-[8px]"></span>
                 <img src="@/assets/shuffle.svg" alt="retrieve letters" class="cursor-pointer relative -top-7 h-8"
@@ -167,44 +165,31 @@ const letterToValue = {
     U: 1, V: 4, W: 10, X: 10, Y: 10, Z: 10
 };
 
-
-// Initialisation de rackSlots comme ref indépendante
-const rackSlots = ref([])
+// Utilisation d'un seul tableau pour les lettres du rack
+const rackLetters = ref([])
 
 // Fonction pour convertir une chaîne de caractères en format compatible avec Draggable
-const convertStringToSlots = (playerLetters) => {
-    const slots = []
-
-    // Créer 7 slots (nombre standard pour le Scrabble)
-    for (let i = 0; i < 7; i++) {
-        if (i < playerLetters.length) {
-            // Si on a une lettre à cette position, créer un slot avec cette lettre
-            slots.push([{
-                id: Date.now() + i + Math.random(), // ID unique basé sur le timestamp + random
-                letter: playerLetters[i]
-            }])
-        } else {
-            // Slot vide
-            slots.push([])
-        }
-    }
-
-    return slots
+const convertStringToLetters = (playerLetters) => {
+    return playerLetters.split('').map((letter, index) => ({
+        id: Date.now() + index + Math.random(), // ID unique basé sur le timestamp + random
+        letter: letter
+    }))
 }
 
-// Fonction pour mettre à jour rackSlots (pour usage futur)
-const updateRackSlots = (newPlayerLetters) => {
-    rackSlots.value = convertStringToSlots(newPlayerLetters)
+// Fonction pour mettre à jour rackLetters (pour usage futur)
+const updateRackLetters = (newPlayerLetters) => {
+    rackLetters.value = convertStringToLetters(newPlayerLetters)
+    console.log(rackLetters.value)
 }
 
-// Initialisation de rackSlots au montage du composant
-const initializeRackSlots = () => {
+// Initialisation de rackLetters au montage du composant
+const initializeRackLetters = () => {
     const playerLetters = props.gameData?.playerLetters?.[props.UID] || 'EBARPVC'
-    rackSlots.value = convertStringToSlots(playerLetters)
+    rackLetters.value = convertStringToLetters(playerLetters)
 }
 
-// Initialiser rackSlots immédiatement
-initializeRackSlots()
+// Initialiser rackLetters immédiatement
+initializeRackLetters()
 
 // Watcher pour surveiller les modifications de gameData.board
 watch(
@@ -215,9 +200,9 @@ watch(
             // Mettre à jour le board local
             updateBoard(newBoard)
 
-            // Mettre à jour rackSlots
+            // Mettre à jour rackLetters
             const playerLetters = props.gameData?.playerLetters?.[props.UID] || 'EBARPVC'
-            updateRackSlots(playerLetters)
+            updateRackLetters(playerLetters)
         }
     },
     { deep: true } // Surveiller les modifications profondes du board
@@ -304,6 +289,21 @@ const onDragEnd = () => {
 const preventPan = (event) => {
     // Empêcher la propagation pour éviter le déclenchement du pan
     event.stopPropagation()
+}
+
+// Fonctions pour gérer le drag and drop dans le rack
+const handleRackChange = (event) => {
+    // Cette fonction est appelée automatiquement par Draggable lors d'un changement
+    // On peut l'utiliser pour des opérations supplémentaires si nécessaire
+}
+
+const handleDragOver = (index) => {
+    // Nécessaire pour permettre le drop
+}
+
+const handleDrop = (targetIndex) => {
+    // Cette logique est maintenant gérée automatiquement par vuedraggable
+    // avec le v-model sur rackLetters
 }
 
 // Fonctions manquantes (à implémenter selon vos besoins)
