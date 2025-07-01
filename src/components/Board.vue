@@ -7,8 +7,10 @@
                 :style="boardTransformStyle">
                 <template v-for="(row, rowIndex) in 15" :key="'row-' + rowIndex">
                     <template v-for="(col, colIndex) in 15" :key="'cell-' + rowIndex + '-' + colIndex">
-                        <div
-                            :class="['h-12 w-12 border flex items-center justify-center relative', getCellClass(boardCell[rowIndex][colIndex])]">
+                        <div :class="['h-12 w-12 border flex items-center justify-center relative', getCellClass(boardCell[rowIndex][colIndex])]"
+                            @drop="handleCellDrop(rowIndex, colIndex, $event)"
+                            @dragover.prevent="handleCellDragOver(rowIndex, colIndex, $event)"
+                            @dragleave="handleCellDragLeave(rowIndex, colIndex, $event)">
                             <!-- Texte de la cellule toujours visible -->
                             <div v-if="boardCell[rowIndex][colIndex] !== ''"
                                 class="absolute inset-0 flex items-center justify-center text-xs font-bold pointer-events-none">
@@ -24,39 +26,27 @@
                                     class="text-red text-xl">★</span>
                             </div>
 
-                            <!-- Zone draggable par-dessus -->
-                            <!-- Si la case est FIXÉE, on la rend sans Draggable -->
-                            <!-- Si la case est FIXÉE, on la rend sans Draggable -->
-                            <template v-if="isFixed(rowIndex, colIndex)">
-                                <div class="flex items-center justify-center h-12 w-12">
-                                    <div
-                                        class="h-11 w-11 rounded-lg select-none flex items-center justify-center border-2 relative z-10 font-bold text-xl bg-base2 border-secondary text-primary">
-                                        {{ board[rowIndex][colIndex][0].letter }}
-                                        <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">
-                                            {{ letterToValue[board[rowIndex][colIndex][0].letter] }}
-                                        </span>
-                                    </div>
+                            <!-- Indicateur de drop -->
+                            <div v-if="hoveredCell && hoveredCell.row === rowIndex && hoveredCell.col === colIndex && canDropInCell(rowIndex, colIndex)"
+                                class="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+                                <div class="h-9 w-9 ring-secondary ring-2 rounded"></div>
+                            </div>
+
+                            <!-- Lettre sur le plateau -->
+                            <div v-if="board[rowIndex][colIndex]" class="flex items-center justify-center h-12 w-12">
+                                <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center border-2 relative z-10 font-bold text-xl"
+                                    :class="isFixed(rowIndex, colIndex) ?
+                                        'bg-base2 border-secondary text-primary' :
+                                        (isValid() ? 'bg-lightblue border-blue text-strongblue' : 'bg-lightred border-red text-strongred')"
+                                    :draggable="!isFixed(rowIndex, colIndex)"
+                                    @dragstart="handleDragStart(rowIndex, colIndex, $event)"
+                                    @mousedown.stop="preventPan">
+                                    {{ board[rowIndex][colIndex] }}
+                                    <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">
+                                        {{ letterToValue[board[rowIndex][colIndex]] }}
+                                    </span>
                                 </div>
-                            </template>
-
-                            <!-- Sinon, c'est un élément Draggable -->
-                            <template v-else>
-                                <Draggable :list="board[rowIndex][colIndex]" group="letters"
-                                    class="flex items-center justify-center h-12 w-12" itemKey="id" :clone="cloneLetter"
-                                    :sort="false" @start="onDragStart" @end="onDragEnd">
-                                    <template #item="{ element }">
-                                        <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl"
-                                            @mousedown.stop="preventPan"
-                                            :class="isValid() ? 'bg-lightblue border-blue text-strongblue' : 'bg-lightred border-red text-strongred'">
-                                            {{ element.letter }}
-                                            <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">
-                                                {{ letterToValue[element.letter] }}
-                                            </span>
-                                        </div>
-                                    </template>
-                                </Draggable>
-                            </template>
-
+                            </div>
                         </div>
                     </template>
                 </template>
@@ -76,21 +66,20 @@
             <div class="flex flex-col">
                 <img src="@/assets/retrieve.svg" alt="retrieve letters" class="cursor-pointer relative h-8"
                     @click="retrieveLetters()" />
-                <div class="flex justify-center flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-[355px]">
-                    <Draggable v-model="rackLetters" group="letters" itemKey="id" :clone="cloneLetter"
-                        class="flex flex-row gap-1 w-full justify-center" @start="onDragStart" @end="onDragEnd"
-                        @change="handleRackChange">
-                        <template #item="{ element, index }">
-                            <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
-                                @mousedown.stop="preventPan" @dragover.prevent="handleDragOver(index)"
-                                @drop="handleDrop(index)" :data-index="index">
-                                {{ element.letter }}
-                                <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">{{
-                                    letterToValue[element.letter]
-                                    }}</span>
-                            </div>
-                        </template>
-                    </Draggable>
+                <div class="flex justify-center flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-[355px]"
+                    @drop="handleRackDrop($event)" @dragover.prevent>
+                    <div v-for="(letter, index) in rackLetters" :key="`rack-${index}`"
+                        class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
+                        :draggable="true" @dragstart="handleRackDragStart(index, $event)" @mousedown.stop="preventPan">
+                        {{ letter }}
+                        <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">
+                            {{ letterToValue[letter] }}
+                        </span>
+                    </div>
+                    <!-- Cases vides pour compléter le rack -->
+                    <div v-for="emptySlot in Math.max(0, 7 - rackLetters.length)" :key="`empty-${emptySlot}`"
+                        class="h-11 w-11 rounded-lg border-2 border-dashed border-base3">
+                    </div>
                 </div>
                 <span class="relative h-2 w-full bg-secondary -top-[8px]"></span>
                 <img src="@/assets/shuffle.svg" alt="retrieve letters" class="cursor-pointer relative -top-7 h-8"
@@ -109,7 +98,6 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import Draggable from 'vuedraggable'
 
 const props = defineProps({
     UID: String,
@@ -119,29 +107,18 @@ const props = defineProps({
 
 const board = ref(
     Array.from({ length: 15 }, () =>
-        Array.from({ length: 15 }, () => [])
+        Array.from({ length: 15 }, () => '')
     )
 )
 
-// Fonction pour mettre à jour le board local (pour usage futur)
+// Fonction pour mettre à jour le board local
 const updateBoard = (newBoardData) => {
     if (newBoardData && Array.isArray(newBoardData)) {
-        // Réinitialiser le board local
         for (let row = 0; row < 15; row++) {
             for (let col = 0; col < 15; col++) {
                 const rowString = newBoardData[row] || '---------------'
                 const letter = rowString[col] || '-'
-
-                if (letter === '-') {
-                    // Cellule vide
-                    board.value[row][col] = []
-                } else {
-                    // Cellule avec une lettre
-                    board.value[row][col] = [{
-                        id: `board-${row}-${col}-${Date.now()}`, // ID unique pour chaque lettre sur le board
-                        letter: letter
-                    }]
-                }
+                board.value[row][col] = letter === '-' ? '' : letter
             }
         }
     }
@@ -186,18 +163,15 @@ const letterToValue = {
     U: 1, V: 4, W: 10, X: 10, Y: 10, Z: 10
 };
 
-// Utilisation d'un seul tableau pour les lettres du rack
+// Rack simplifié : tableau de lettres (strings)
 const rackLetters = ref([])
 
-// Fonction pour convertir une chaîne de caractères en format compatible avec Draggable
+// Fonction pour convertir une chaîne de caractères en tableau de lettres
 const convertStringToLetters = (playerLetters) => {
-    return playerLetters.split('').map((letter, index) => ({
-        id: Date.now() + index + Math.random(), // ID unique basé sur le timestamp + random
-        letter: letter
-    }))
+    return playerLetters.split('')
 }
 
-// Fonction pour mettre à jour rackLetters (pour usage futur)
+// Fonction pour mettre à jour rackLetters
 const updateRackLetters = (newPlayerLetters) => {
     rackLetters.value = convertStringToLetters(newPlayerLetters)
     console.log(rackLetters.value)
@@ -216,20 +190,14 @@ initializeRackLetters()
 watch(
     () => props.gameData?.board,
     (newBoard, oldBoard) => {
-        // Vérifier si le board a réellement changé (éviter les faux positifs)
         if (newBoard && JSON.stringify(newBoard) !== JSON.stringify(oldBoard)) {
-            // Mettre à jour le board local
             updateBoard(newBoard)
-
-            // Mettre à jour rackLetters
             const playerLetters = props.gameData?.playerLetters?.[props.UID] || 'EBARPVC'
             updateRackLetters(playerLetters)
         }
     },
-    { deep: true } // Surveiller les modifications profondes du board
+    { deep: true }
 )
-
-const cloneLetter = (original) => original ? { ...original } : null
 
 function getCellClass(cell) {
     switch (cell) {
@@ -261,15 +229,11 @@ const handleWheel = (event) => {
     const newScale = Math.min(2.5, Math.max(0.5, scale.value + delta))
 
     if (newScale !== scale.value) {
-        // Récupérer les coordonnées de la souris par rapport au wrapper du plateau
         const rect = boardWrapper.value.getBoundingClientRect()
         const mouseX = event.clientX - rect.left
         const mouseY = event.clientY - rect.top
-
-        // Calculer le facteur de zoom
         const scaleFactor = newScale / scale.value
 
-        // Ajuster la translation pour que le zoom se fasse depuis la position de la souris
         translate.value.x = mouseX - (mouseX - translate.value.x) * scaleFactor
         translate.value.y = mouseY - (mouseY - translate.value.y) * scaleFactor
 
@@ -278,7 +242,6 @@ const handleWheel = (event) => {
 }
 
 const startPan = (event) => {
-    // Ne pas activer le pan si on est en train de faire du drag & drop
     if (event.button !== 0 || isDragging.value) return
     isPanning.value = true
     panStart.value = { x: event.clientX, y: event.clientY }
@@ -297,37 +260,122 @@ const stopPan = () => {
     isPanning.value = false
 }
 
-// Nouvelles fonctions pour gérer le drag & drop
-const onDragStart = () => {
-    isDragging.value = true
-    isPanning.value = false // Arrêter le pan si en cours
-}
-
-const onDragEnd = () => {
-    isDragging.value = false
-}
-
 const preventPan = (event) => {
-    // Empêcher la propagation pour éviter le déclenchement du pan
     event.stopPropagation()
 }
 
-// Fonctions pour gérer le drag and drop dans le rack
-const handleRackChange = (event) => {
-    // Cette fonction est appelée automatiquement par Draggable lors d'un changement
-    // On peut l'utiliser pour des opérations supplémentaires si nécessaire
+// Variables pour le drag & drop
+const draggedItem = ref(null)
+const dragSource = ref(null) // 'rack' ou 'board'
+const dragSourceIndex = ref(null) // index dans le rack ou {row, col} pour le board
+const hoveredCell = ref(null) // {row, col} de la cellule survolée
+
+// Gestion du drag depuis le rack
+const handleRackDragStart = (index, event) => {
+    isDragging.value = true
+    draggedItem.value = rackLetters.value[index]
+    dragSource.value = 'rack'
+    dragSourceIndex.value = index
+    event.dataTransfer.effectAllowed = 'move'
 }
 
-const handleDragOver = (index) => {
-    // Nécessaire pour permettre le drop
+// Gestion du drag depuis le board
+const handleDragStart = (row, col, event) => {
+    if (isFixed(row, col)) {
+        event.preventDefault()
+        return
+    }
+    isDragging.value = true
+    draggedItem.value = board.value[row][col]
+    dragSource.value = 'board'
+    dragSourceIndex.value = { row, col }
+    event.dataTransfer.effectAllowed = 'move'
 }
 
-const handleDrop = (targetIndex) => {
-    // Cette logique est maintenant gérée automatiquement par vuedraggable
-    // avec le v-model sur rackLetters
+// Gestion du survol des cellules pendant le drag
+const handleCellDragOver = (row, col, event) => {
+    event.preventDefault()
+    if (draggedItem.value && canDropInCell(row, col)) {
+        hoveredCell.value = { row, col }
+        event.dataTransfer.dropEffect = 'move'
+    } else {
+        hoveredCell.value = null
+        event.dataTransfer.dropEffect = 'none'
+    }
 }
 
-// Fonctions manquantes (à implémenter selon vos besoins)
+const handleCellDragLeave = (row, col, event) => {
+    // Vérifier si on quitte vraiment la cellule (pas juste un enfant)
+    const rect = event.currentTarget.getBoundingClientRect()
+    const x = event.clientX
+    const y = event.clientY
+
+    if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
+        if (hoveredCell.value && hoveredCell.value.row === row && hoveredCell.value.col === col) {
+            hoveredCell.value = null
+        }
+    }
+}
+
+// Fonction pour vérifier si on peut déposer dans une cellule
+const canDropInCell = (row, col) => {
+    if (!draggedItem.value) return false
+
+    // Si la cellule est déjà occupée
+    if (board.value[row][col]) {
+        // On peut seulement déposer si on vient de cette même cellule
+        return dragSource.value === 'board' &&
+            dragSourceIndex.value.row === row &&
+            dragSourceIndex.value.col === col
+    }
+
+    // Cellule vide, on peut toujours déposer
+    return true
+}
+// Drop sur une cellule du board
+const handleCellDrop = (row, col, event) => {
+    event.preventDefault()
+    if (!draggedItem.value || !canDropInCell(row, col)) return
+
+    // Effectuer le déplacement
+    if (dragSource.value === 'rack') {
+        // Du rack vers le board
+        rackLetters.value.splice(dragSourceIndex.value, 1)
+        board.value[row][col] = draggedItem.value
+    } else if (dragSource.value === 'board') {
+        // Du board vers le board
+        board.value[dragSourceIndex.value.row][dragSourceIndex.value.col] = ''
+        board.value[row][col] = draggedItem.value
+    }
+
+    // Reset
+    draggedItem.value = null
+    dragSource.value = null
+    dragSourceIndex.value = null
+    hoveredCell.value = null
+    isDragging.value = false
+}
+
+// Drop sur le rack
+const handleRackDrop = (event) => {
+    event.preventDefault()
+    if (!draggedItem.value || dragSource.value === 'rack') return
+
+    // Seulement depuis le board vers le rack
+    if (dragSource.value === 'board') {
+        board.value[dragSourceIndex.value.row][dragSourceIndex.value.col] = ''
+        rackLetters.value.push(draggedItem.value)
+    }
+
+    // Reset
+    draggedItem.value = null
+    dragSource.value = null
+    dragSourceIndex.value = null
+    hoveredCell.value = null
+    isDragging.value = false
+}
+
+// Fonctions manquantes
 const showBag = () => {
     console.log('Show bag')
 }
@@ -371,9 +419,8 @@ function isValid() {
 }
 
 const isFixed = (row, col) => {
-    const cell = board.value[row][col];
-    return Array.isArray(cell) && cell.length > 0 && cell[0]?.letter !== undefined && cell[0]?.letter === gameBoard.value[row][col];
+    const letter = board.value[row][col]
+    return letter && gameBoard.value && gameBoard.value[row] && gameBoard.value[row][col] === letter
 }
-
 
 </script>
