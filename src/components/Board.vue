@@ -25,20 +25,38 @@
                             </div>
 
                             <!-- Zone draggable par-dessus -->
-                            <Draggable :list="board[rowIndex][colIndex]" group="letters"
-                                class="flex items-center justify-center h-12 w-12" itemKey="id" :clone="cloneLetter"
-                                :sort="false" @start="onDragStart" @end="onDragEnd">
-                                <template #item="{ element }">
-                                    <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
-                                        @mousedown.stop="preventPan">
-                                        {{ element.letter }}
-                                        <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">{{
-                                            letterToValue[element.letter]
-                                            }}</span>
-
+                            <!-- Si la case est FIXÉE, on la rend sans Draggable -->
+                            <!-- Si la case est FIXÉE, on la rend sans Draggable -->
+                            <template v-if="isFixed(rowIndex, colIndex)">
+                                <div class="flex items-center justify-center h-12 w-12">
+                                    <div
+                                        class="h-11 w-11 rounded-lg select-none flex items-center justify-center border-2 relative z-10 font-bold text-xl bg-base2 border-secondary text-primary">
+                                        {{ board[rowIndex][colIndex][0].letter }}
+                                        <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">
+                                            {{ letterToValue[board[rowIndex][colIndex][0].letter] }}
+                                        </span>
                                     </div>
-                                </template>
-                            </Draggable>
+                                </div>
+                            </template>
+
+                            <!-- Sinon, c'est un élément Draggable -->
+                            <template v-else>
+                                <Draggable :list="board[rowIndex][colIndex]" group="letters"
+                                    class="flex items-center justify-center h-12 w-12" itemKey="id" :clone="cloneLetter"
+                                    :sort="false" @start="onDragStart" @end="onDragEnd">
+                                    <template #item="{ element }">
+                                        <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl"
+                                            @mousedown.stop="preventPan"
+                                            :class="isValid() ? 'bg-lightblue border-blue text-strongblue' : 'bg-lightred border-red text-strongred'">
+                                            {{ element.letter }}
+                                            <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">
+                                                {{ letterToValue[element.letter] }}
+                                            </span>
+                                        </div>
+                                    </template>
+                                </Draggable>
+                            </template>
+
                         </div>
                     </template>
                 </template>
@@ -60,7 +78,8 @@
                     @click="retrieveLetters()" />
                 <div class="flex justify-center flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-[355px]">
                     <Draggable v-model="rackLetters" group="letters" itemKey="id" :clone="cloneLetter"
-                        class="flex flex-row gap-1 w-full justify-center" @start="onDragStart" @end="onDragEnd" @change="handleRackChange">
+                        class="flex flex-row gap-1 w-full justify-center" @start="onDragStart" @end="onDragEnd"
+                        @change="handleRackChange">
                         <template #item="{ element, index }">
                             <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
                                 @mousedown.stop="preventPan" @dragover.prevent="handleDragOver(index)"
@@ -128,11 +147,13 @@ const updateBoard = (newBoardData) => {
     }
 }
 
+const gameBoard = ref(null)
+
 // Initialisation du board au montage du composant
 const initializeBoard = () => {
-    const gameBoard = props.gameData?.board
-    if (gameBoard) {
-        updateBoard(gameBoard)
+    gameBoard.value = props.gameData?.board
+    if (gameBoard.value) {
+        updateBoard(gameBoard.value)
     }
 }
 
@@ -314,4 +335,15 @@ const showBag = () => {
 const retrieveLetters = () => {
     console.log('Retrieve letters')
 }
+
+function isValid() {
+    return true
+}
+
+const isFixed = (row, col) => {
+    const cell = board.value[row][col];
+    return Array.isArray(cell) && cell.length > 0 && cell[0]?.letter !== undefined && cell[0]?.letter === gameBoard.value[row][col];
+}
+
+
 </script>
