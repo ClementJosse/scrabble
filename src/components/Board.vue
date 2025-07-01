@@ -336,8 +336,38 @@ const retrieveLetters = () => {
     console.log('Retrieve letters')
 }
 
+function countWord(row, col, direction){
+
+}
+
+function checkWord(row, col, direction){
+    
+}
+
+function checkMove(row, col){ // return true/false + les points
+    // var score = 0
+    // var wordList = {}
+    // check a gauche s'il y a une lettre
+        // while : se déplacer vers la lettre la plus à gauche
+            // une fois dessus, score+=countWord()
+            // wordList.add(checkword())
+        
+}
+
 function isValid() {
-    return true
+    // Si toute les lettres sont sur la meme ligne sans trou
+    
+        // Si le plateau est vierge
+            /* calcul des points du mot */
+            // Si l'une des lettres touche le centre
+                /* return true*/
+        // Sinon (si le plateau n'est pas vierge)
+            // Si au moins une lettre de board touche une lettre fixed du gameBoard
+                // recherche de la lettre la plus en haut a gauche
+                    // appel de la fonction récursive de coupvalide+comptage de point
+                    /* return true || false*/
+
+    return false
 }
 
 const isFixed = (row, col) => {
