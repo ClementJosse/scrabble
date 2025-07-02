@@ -404,7 +404,7 @@ function checkMove(row, col){ // return true/false + les points
 
 function isValid() {
     // Si toute les lettres sont sur la meme ligne sans trou
-    
+    console.log(isAligned())
         // Si le plateau est vierge
             /* calcul des points du mot */
             // Si l'une des lettres touche le centre
@@ -415,7 +415,58 @@ function isValid() {
                     // appel de la fonction récursive de coupvalide+comptage de point
                     /* return true || false*/
 
-    return false
+    return !(isAligned() == false)
+}
+
+function isAligned(){
+    let topLeftLetter = getTopLeftLetter()
+    let wordLine={start : topLeftLetter, end : null}
+    let inX = false
+    for (let c = topLeftLetter.col+1; c < 15; c++) {
+        if(board.value[topLeftLetter.row][c] !== ""){
+            if(gameBoard.value[topLeftLetter.row][c] === "-"){
+                inX = true
+                wordLine.end={row:topLeftLetter.row, col:c}
+            }
+        }
+        else{
+            break
+        }
+    }
+    if(!inX){
+        for (let r = topLeftLetter.row+1; r < 15; r++) {
+            if(board.value[r][topLeftLetter.col] !== ""){
+                if(gameBoard.value[r][topLeftLetter.col] === "-"){
+                    wordLine.end={row:r, col:topLeftLetter.col}
+                }   
+            }
+            else{
+                break
+            }
+        }
+    }
+    if(wordLine.end==null){
+        wordLine.end=wordLine.start
+    }
+    for (let r = 0; r < 15; r++) {
+        for (let c = 0; c < 15; c++) {
+            if(board.value[r][c] !== "" && gameBoard.value[r][c] === "-" &&!(r >= wordLine.start.row && r <= wordLine.end.row && c >= wordLine.start.col && c <= wordLine.end.col)){
+                return false
+            }
+        }
+    }
+    return wordLine
+}
+
+function getTopLeftLetter(){
+    for (let r = 0; r < 15; r++) {
+        for (let c = 0; c < 15; c++) {
+            if(board.value[r][c] !== "" && gameBoard.value[r][c] === "-"){
+                return {row: r, col:c}
+            }
+        }
+    }
+    return null
 }
 
 const isFixed = (row, col) => {
