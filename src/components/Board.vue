@@ -37,7 +37,7 @@
                                 <div class="h-11 w-11 rounded-lg select-none flex items-center justify-center border-2 relative z-10 font-bold text-xl"
                                     :class="isFixed(rowIndex, colIndex) ?
                                         'bg-base2 border-secondary text-primary' :
-                                        (isValid() ? 'bg-lightblue border-blue text-strongblue' : 'bg-lightred border-red text-strongred')"
+                                        (isValidMemoized ? 'bg-lightblue border-blue text-strongblue' : 'bg-lightred border-red text-strongred')"
                                     :draggable="!isFixed(rowIndex, colIndex)"
                                     @dragstart="handleDragStart(rowIndex, colIndex, $event)"
                                     @mousedown.stop="preventPan">
@@ -332,6 +332,7 @@ const canDropInCell = (row, col) => {
     // Cellule vide, on peut toujours déposer
     return true
 }
+
 // Drop sur une cellule du board
 const handleCellDrop = (row, col, event) => {
     event.preventDefault()
@@ -354,6 +355,9 @@ const handleCellDrop = (row, col, event) => {
     dragSourceIndex.value = null
     hoveredCell.value = null
     isDragging.value = false
+
+    // Déclencher la validation avec debounce
+    triggerValidation()
 }
 
 // Drop sur le rack
@@ -373,6 +377,24 @@ const handleRackDrop = (event) => {
     dragSourceIndex.value = null
     hoveredCell.value = null
     isDragging.value = false
+
+    // Déclencher la validation avec debounce
+    triggerValidation()
+}
+
+// Variables pour le debounce et la mémorisation de isValid
+const isValidMemoized = ref(true)
+let validationTimeout = null
+
+// Fonction de debounce pour la validation
+const triggerValidation = () => {
+    if (validationTimeout) {
+        clearTimeout(validationTimeout)
+    }
+    
+    validationTimeout = setTimeout(() => {
+        isValidMemoized.value = isValid()
+    }, 1)
 }
 
 // Fonctions manquantes
