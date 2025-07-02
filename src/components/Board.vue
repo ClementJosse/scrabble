@@ -86,7 +86,7 @@
                     @click="retrieveLetters()" />
             </div>
             <div class="w-[150px] flex flex-col justify-center items-center gap-2">
-                <span class="text-2xl text-strongblue font-bold">51pts</span>
+                <span class="text-2xl text-strongblue font-bold">{{ playScore }}pts</span>
                 <button
                     class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">
                     Jouer le coup
@@ -102,7 +102,8 @@ import { ref, computed, watch } from 'vue'
 const props = defineProps({
     UID: String,
     gameData: Object,
-    gameId: String
+    gameId: String,
+    listeMots: Object
 })
 
 const board = ref(
@@ -424,20 +425,42 @@ function checkMove(row, col){ // return true/false + les points
         
 }
 
+const playScore = ref(0)
+
 function isValid() {
     // Si toute les lettres sont sur la meme ligne sans trou
-    console.log(isAligned())
+    playScore.value=0
+    let wordLine = isAligned()
+    if(!(wordLine == false)){
+        console.log("mot possible")
         // Si le plateau est vierge
-            /* calcul des points du mot */
+        if(gameBoard.value.every(cell => cell === '---------------')){
+            console.log("plateau vierge")
+             /* calcul des points du mot */
+            playScore.value=10
             // Si l'une des lettres touche le centre
-                /* return true*/
-        // Sinon (si le plateau n'est pas vierge)
-            // Si au moins une lettre de board touche une lettre fixed du gameBoard
-                // recherche de la lettre la plus en haut a gauche
-                    // appel de la fonction récursive de coupvalide+comptage de point
-                    /* return true || false*/
+            if(wordLine.start.row == 7 && wordLine.end.row == 7 && wordLine.start.col <= 7 && wordLine.end.col >= 7){
+                // Verification si le mot existe au scrabble
+                let word = board.value[7].slice(wordLine.start.col, wordLine.end.col + 1).join('');
+                console.log(props.listeMots.includes(word.toLowerCase()),word.toLowerCase())
+                return props.listeMots.includes(word.toLowerCase())
+            }
+        }
+        else{
+            console.log("plateau non vide")        
+            // Sinon (si le plateau n'est pas vierge)
+                // Si au moins une lettre de board touche une lettre fixed du gameBoard
+                    // recherche de la lettre la plus en haut a gauche
+                        // appel de la fonction récursive de coupvalide+comptage de point
+                        /* return true || false*/ 
+        }
+           
+            
 
-    return !(isAligned() == false)
+    }
+        
+        
+    return false
 }
 
 function isAligned(){

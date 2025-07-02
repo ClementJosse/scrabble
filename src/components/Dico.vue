@@ -12,12 +12,7 @@
         <Transition :duration="550" name="toggletransition">
             <div v-if="isDicoVisible"
                 class="bg-base2 w-[330px] relative z-10 -top-[60px] h-[calc(100vh-210px)] shadow-md shadow-base3 rounded-xl overflow-hidden flex flex-col">
-                <div v-if="isLoading"
-                    class="flex justify-center items-center h-[calc(100vh-350px)] flex-col text-secondary text-lg gap-5">
-                    <Loader />
-                    Chargement du dictionnaire...
-                </div>
-                <div v-else class="flex flex-col h-full">
+                <div class="flex flex-col h-full">
                     <div class="pt-[18px] text-sm text-secondary flex flex-col items-center flex-shrink-0">
                         <span
                             class="h-10 w-[195px] bg-base3 text-primary text-xl items-center justify-center flex font-semibold mb-6 rounded-lg">
@@ -74,11 +69,7 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
-import Loader from './Loader.vue'
 
-const ods9 = ref(null)              // Dictionnaire avec définitions
-const listeMots = ref([])           // Liste des mots sans définitions
-const isLoading = ref(true)
 const mot = ref("")
 const motValide = ref(false)
 const definitions = ref([])
@@ -86,7 +77,9 @@ const suggestions = ref([])
 const isSearching = ref(false)
 
 const props = defineProps({
-    isLeader: Boolean
+    isLeader: Boolean,
+    listeMots: Object,
+    ods9: Object,
 })
 
 const isDicoVisible = ref(true)
@@ -104,25 +97,6 @@ function clearInput() {
     isSearching.value = false
 }
 
-onMounted(() => {
-    loadDictionaries()
-})
-
-const loadDictionaries = async () => {
-    try {
-        const [odsResponse, motsResponse] = await Promise.all([
-            fetch('https://scrabble.cjosse.com/ods9.json'),
-            fetch('https://scrabble.cjosse.com/liste_mots.json')
-        ])
-        ods9.value = await odsResponse.json()
-        listeMots.value = await motsResponse.json()
-        isLoading.value = false
-        console.log("Dictionnaires chargés")
-    } catch (error) {
-        console.error('Erreur lors du chargement des dictionnaires:', error)
-        isLoading.value = false
-    }
-}
 
 function normaliser(texte) {
     return texte
@@ -162,15 +136,15 @@ function rechercherMot(motBrut) {
     }
 
     // Vérification dans la liste des mots
-    motValide.value = listeMots.value.includes(motNettoye)
+    motValide.value = props.listeMots.includes(motNettoye)
 
     // Récupération de la définition si dispo
-    definitions.value = motValide.value && ods9.value?.[motNettoye]
-        ? ods9.value[motNettoye]
+    definitions.value = motValide.value && props.ods9?.[motNettoye]
+        ? props.ods9[motNettoye]
         : []
 
     // Suggestions (maximum 30 mots commençant par `motNettoye`)
-    suggestions.value = listeMots.value
+    suggestions.value = props.listeMots
         .filter(word => word.startsWith(motNettoye) && word !== motNettoye)
         .sort((a, b) => a.length - b.length || a.localeCompare(b))
         .slice(0, 30)

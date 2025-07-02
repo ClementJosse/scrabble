@@ -11,10 +11,10 @@
         </div>
         <div v-else-if="isInGame && isPlayerInGame">
             <div>
-                <Dico :isLeader="gameData.leader === UID"/>
+                <Dico :isLeader="gameData.leader === UID" :ods9="ods9" :listeMots="listeMots"/>
             </div>
             <div>
-                <Board :UID="UID" :gameData="gameData" :gameId="gameId"/> 
+                <Board :UID="UID" :gameData="gameData" :gameId="gameId" :listeMots="listeMots"/> 
             </div>
             <div class="">
                 <TimerTurn :UID="UID" :gameData="gameData" :gameId="gameId"/> <!-- Futur composant pour afficher les tours -->
@@ -99,7 +99,24 @@ const initialize = async () => {
 
 onMounted(() => {
     initialize()
+    loadDictionaries()
 })
+const ods9 = ref(null)
+const listeMots = ref(null)
+
+const loadDictionaries = async () => {
+    try {
+        const [odsResponse, motsResponse] = await Promise.all([
+            fetch('https://scrabble.cjosse.com/ods9.json'),
+            fetch('https://scrabble.cjosse.com/liste_mots.json')
+        ])
+        ods9.value = await odsResponse.json()
+        listeMots.value = await motsResponse.json()
+        console.log("Dictionnaires chargés")
+    } catch (error) {
+        console.error('Erreur lors du chargement des dictionnaires:', error)
+    }
+}
 
 
 </script>
