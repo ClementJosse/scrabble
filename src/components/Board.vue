@@ -157,11 +157,11 @@ const boardCell = [
 ]
 
 const letterToValue = {
-    A: 1, B: 3, C: 3, D: 2, E: 1,
-    F: 4, G: 2, H: 4, I: 1, J: 8,
-    K: 10, L: 1, M: 2, N: 1, O: 1,
-    P: 3, Q: 8, R: 1, S: 1, T: 1,
-    U: 1, V: 4, W: 10, X: 10, Y: 10, Z: 10
+    'A': 1, 'B': 3, 'C': 3, 'D': 2, 'E': 1,
+    'F': 4, 'G': 2, 'H': 4, 'I': 1, 'J': 8,
+    'K': 10, 'L': 1, 'M': 2, 'N': 1, 'O': 1,
+    'P': 3, 'Q': 8, 'R': 1, 'S': 1, 'T': 1,
+    'U': 1, 'V': 4, 'W': 10, 'X': 10, 'Y': 10, 'Z': 10
 };
 
 // Rack simplifié : tableau de lettres (strings)
@@ -392,7 +392,7 @@ const triggerValidation = () => {
     if (validationTimeout) {
         clearTimeout(validationTimeout)
     }
-    
+
     validationTimeout = setTimeout(() => {
         isValidMemoized.value = isValid()
     }, 1)
@@ -412,131 +412,216 @@ const playScore = ref(0)
 
 function isValid() {
     // Si toute les lettres sont sur la meme ligne sans trou
-    playScore.value=0
+    playScore.value = 0
     let wordLine = isAligned()
-    if(!(wordLine == false)){
+    if (!(wordLine == false)) {
         console.log("mot possible")
         // Si le plateau est vierge
-        if(gameBoard.value.every(cell => cell === '---------------')){
+        if (gameBoard.value.every(cell => cell === '---------------')) {
             console.log("plateau vierge")
-             /* calcul des points du mot */
-            playScore.value=10
+            /* calcul des points du mot */
+            playScore.value = 10
             // Si l'une des lettres touche le centre
-            if(wordLine.start.row == 7 && wordLine.end.row == 7 && wordLine.start.col <= 7 && wordLine.end.col >= 7){
+            if (wordLine.start.row == 7 && wordLine.end.row == 7 && wordLine.start.col <= 7 && wordLine.end.col >= 7) {
                 // Verification si le mot existe au scrabble
                 let word = board.value[7].slice(wordLine.start.col, wordLine.end.col + 1).join('');
-                console.log(props.listeMots.includes(word.toLowerCase()),word.toLowerCase())
+                console.log(props.listeMots.includes(word.toLowerCase()), word.toLowerCase())
                 return props.listeMots.includes(word.toLowerCase())
             }
         }
-        else{ // Sinon (si le plateau n'est pas vierge)
-            console.log("plateau non vide")        
-                if(isTouchingFixedLetters(wordLine)){ // Si au moins une lettre de board touche une lettre fixed du gameBoard
-                    return true
-                    // recherche de la lettre la plus en haut a gauche
-                        // appel de la fonction récursive de coupvalide+comptage de point
-                            /* return true || false*/ 
+        else { // Sinon (si le plateau n'est pas vierge)
+            console.log("plateau non vide")
+            if (isTouchingFixedLetters(wordLine)) { // Si au moins une lettre de board touche une lettre fixed du gameBoard
+                return checkMove(wordLine)
+            }
+        }
+    }
+    return false
+}
+
+function isTouchingFixedLetters(wordLine) {
+    if (wordLine.start.row == wordLine.end.row) {
+        if (wordLine.start.col > 0 && gameBoard.value[wordLine.start.row][wordLine.start.col - 1] != '-') {
+            return true
+        }
+        for (let c = wordLine.start.col; c <= wordLine.end.col; c++) {
+            if (gameBoard.value[wordLine.start.row][c] != '-') {
+                return true
+            }
+            if (wordLine.start.row > 0 && gameBoard.value[wordLine.start.row - 1][c] != '-') {
+                return true
+            }
+            if (wordLine.start.row < 14 && gameBoard.value[wordLine.start.row + 1][c] != '-') {
+                return true
+            }
+        }
+        if (wordLine.start.col < 14 && gameBoard.value[wordLine.end.row][wordLine.end.col + 1] != '-') {
+            return true
+        }
+    }
+    else {
+        if (wordLine.start.row > 0 && gameBoard.value[wordLine.start.row - 1][wordLine.start.col] != '-') {
+            return true
+        }
+        for (let r = wordLine.start.row; r <= wordLine.end.row; r++) {
+            if (gameBoard.value[r][wordLine.start.col] != '-') {
+                return true
+            }
+            if (wordLine.start.col > 0 && gameBoard.value[r][wordLine.start.col - 1] != '-') {
+                return true
+            }
+            if (wordLine.start.col < 14 && gameBoard.value[r][wordLine.start.col + 1] != '-') {
+                return true
+            }
+        }
+        if (wordLine.start.row < 14 && gameBoard.value[wordLine.end.row + 1][wordLine.end.col] != '-') {
+            return true
+        }
+    }
+    return false
+}
+
+function checkMove(wordLine) {
+    var wordsAndValue = []
+    var spineWord = ''
+    var spineValue = 0
+    var spineMulti = 1
+    var head = { col: 0, row: 0 }
+    console.log(wordLine);
+    // Si le spineWord est horizontal
+    if (wordLine.start.row == wordLine.end.row) {
+        // ici le row est fixe, on itère sur le col
+
+        // récupération de la lettre la plus à gauche du mot
+        head.row = wordLine.start.row
+        for (let c = wordLine.start.col; c >= 0; c--) {
+            if (board.value[head.row][c] != "") {
+                head.col = c
+            }
+            else {
+                break
+            }
+        }
+        console.log(head, board.value[head.row][head.col])
+
+        // calcul du mot principal
+        for (let c = head.col; c <= wordLine.end.col; c++) {
+            spineWord += board.value[wordLine.start.row][c]
+            spineValue += letterToValue[board.value[wordLine.start.row][c]]
+            if (board.value[wordLine.start.row][c] != '' && gameBoard.value[wordLine.start.row][c] != '-') {
+                console.log('skip recherche secondaire', gameBoard.value[wordLine.start.row][c]);
+            }
+            else {
+                if (boardCell[wordLine.start.row][c] != '') {
+                    if (boardCell[wordLine.start.row][c] == 'L2') {
+                        spineValue += letterToValue[board.value[wordLine.start.row][c]]
+                    }
+                    if (boardCell[wordLine.start.row][c] == 'L3') {
+                        spineValue += letterToValue[board.value[wordLine.start.row][c]] * 2
+                    }
+                    if (boardCell[wordLine.start.row][c] == 'M2' || boardCell[wordLine.start.row][c] == '★') {
+                        spineMulti *= 2
+                    }
+                    if (boardCell[wordLine.start.row][c] == 'M3') {
+                        spineMulti *= 3
+                    }
                 }
-                
-                    
+                if (wordLine.start.row + 1 < 15 && board.value[wordLine.start.row + 1][c] != "" || wordLine.start.row - 1 >= 0 && board.value[wordLine.start.row - 1][c] != "") {
+                    console.log('mot a compter au dessus ou en dessous de', board.value[wordLine.start.row][c]);
+                    wordsAndValue.push(getSecondaryWordCol(wordLine.start.row, c))
+                }
+            }
+
         }
-           
-            
 
     }
-        
-        
-    return false
+    // Si le spineWord est vertical
+    else {
+
+    }
+    console.log();
+    console.log(spineWord);
+    console.log(wordsAndValue)
+
+    wordsAndValue.push({ "value": spineValue * spineMulti, "isValid": props.listeMots.includes(spineWord.toLowerCase()) })
+    playScore.value = wordsAndValue.reduce((total, item) => total + item.value, 0)
+    return wordsAndValue.every(item => item.isValid);
 }
 
-function isTouchingFixedLetters(wordLine){
-    if(wordLine.start.row == wordLine.end.row){
-        if(wordLine.start.col>0 && gameBoard.value[wordLine.start.row][wordLine.start.col-1]!='-'){
-            return true
+function getSecondaryWordCol(row, col) {
+    // ici col doit etre fixe, on itère sur le row 
+    let secondHead = { row: row, col: col }
+    var secondWord = ''
+    var secondValue = 0
+    var secondMulti = 1
+    for (let r = row; r >= 0; r--) {
+        if (board.value[r][col] != "") {
+            secondHead.row = r
         }
-        for(let c = wordLine.start.col; c<=wordLine.end.col; c++){
-            if(gameBoard.value[wordLine.start.row][c]!='-'){
-                return true
-            }
-            if(wordLine.start.row>0 && gameBoard.value[wordLine.start.row-1][c]!='-'){
-                return true
-            }
-            if(wordLine.start.row<15 && gameBoard.value[wordLine.start.row+1][c]!='-'){
-                return true
-            }
-        }
-        if(wordLine.start.col<14 && gameBoard.value[wordLine.end.row][wordLine.end.col+1]!='-'){
-            return true
-        }
-    }
-    else{
-        if(wordLine.start.row>0 && gameBoard.value[wordLine.start.row-1][wordLine.start.col]!='-'){
-            return true
-        }
-        for(let r = wordLine.start.row; r<=wordLine.end.row; r++){
-            if(gameBoard.value[r][wordLine.start.col]!='-'){
-                return true
-            }
-            if(wordLine.start.col>0 && gameBoard.value[r][wordLine.start.col-1]!='-'){
-                return true
-            }
-            if(wordLine.start.col<15 && gameBoard.value[r][wordLine.start.col+1]!='-'){
-                return true
-            }
-        }
-        if(wordLine.start.row<14 && gameBoard.value[wordLine.end.row+1][wordLine.end.col]!='-'){
-            return true
-        }
-    }
-    return false
-}
-
-function checkMove(wordLine){
-    var head = {col:0,row:0}
-    if(wordLine.row.start == wordLine.row.end){
-        head.row = wordLine.row.start
-        for(c = wordLine.col.start; c>=0; c--){
-            head.col=c
-        }
-    }
-    else{
-
-    }
-}
-
-function isAligned(){
-    let topLeftLetter = getTopLeftLetter()
-    let wordLine={start : topLeftLetter, end : null}
-    let inX = false
-    for (let c = topLeftLetter.col+1; c < 15; c++) {
-        if(board.value[topLeftLetter.row][c] !== ""){
-            if(gameBoard.value[topLeftLetter.row][c] === "-"){
-                inX = true
-                wordLine.end={row:topLeftLetter.row, col:c}
-            }
-        }
-        else{
+        else {
             break
         }
     }
-    if(!inX){
-        for (let r = topLeftLetter.row+1; r < 15; r++) {
-            if(board.value[r][topLeftLetter.col] !== ""){
-                if(gameBoard.value[r][topLeftLetter.col] === "-"){
-                    wordLine.end={row:r, col:topLeftLetter.col}
-                }   
+    // on a ici la position de la première lettre du mot secondaire, on peut commencer à le compter.
+    for (let r = secondHead.row; r < 15; r++) {
+        if (board.value[r][col] != "") {
+            secondWord += board.value[r][col]
+            secondValue += letterToValue[board.value[r][col]]
+            if (gameBoard.value[r][col] == "-") {
+                if (boardCell[r][col] != '') {
+                    if (boardCell[r][col] == 'L2') {
+                        secondValue += letterToValue[board.value[r][col]]
+                    }
+                    if (boardCell[r][col] == 'L3') {
+                        secondValue += letterToValue[board.value[r][col]] * 2
+                    }
+                    if (boardCell[r][col] == 'M2' || boardCell[r][col] == '★') {
+                        secondMulti *= 2
+                    }
+                    if (boardCell[r][col] == 'M3') {
+                        secondMulti *= 3
+                    }
+                }
             }
-            else{
+        }
+        else {
+            break
+        }
+    }
+    return { "value": secondValue * secondMulti, "isValid": props.listeMots.includes(secondWord.toLowerCase()) }
+}
+
+function isAligned() {
+    let topLeftLetter = getTopLeftLetter()
+    let wordLine = { start: topLeftLetter, end: null }
+    let inX = false
+    for (let c = topLeftLetter.col + 1; c < 15; c++) {
+        if (board.value[topLeftLetter.row][c] !== "") {
+            wordLine.end = { row: topLeftLetter.row, col: c }
+            if (gameBoard.value[topLeftLetter.row][c] === "-") {
+                inX = true
+            }
+        }
+        else {
+            break
+        }
+    }
+    if (!inX) {
+        for (let r = topLeftLetter.row + 1; r < 15; r++) {
+            if (board.value[r][topLeftLetter.col] !== "") {
+                wordLine.end = { row: r, col: topLeftLetter.col }
+            }
+            else {
                 break
             }
         }
     }
-    if(wordLine.end==null){
-        wordLine.end=wordLine.start
+    if (wordLine.end == null) {
+        wordLine.end = wordLine.start
     }
     for (let r = 0; r < 15; r++) {
         for (let c = 0; c < 15; c++) {
-            if(board.value[r][c] !== "" && gameBoard.value[r][c] === "-" &&!(r >= wordLine.start.row && r <= wordLine.end.row && c >= wordLine.start.col && c <= wordLine.end.col)){
+            if (board.value[r][c] !== "" && gameBoard.value[r][c] === "-" && !(r >= wordLine.start.row && r <= wordLine.end.row && c >= wordLine.start.col && c <= wordLine.end.col)) {
                 return false
             }
         }
@@ -544,11 +629,11 @@ function isAligned(){
     return wordLine
 }
 
-function getTopLeftLetter(){
+function getTopLeftLetter() {
     for (let r = 0; r < 15; r++) {
         for (let c = 0; c < 15; c++) {
-            if(board.value[r][c] !== "" && gameBoard.value[r][c] === "-"){
-                return {row: r, col:c}
+            if (board.value[r][c] !== "" && gameBoard.value[r][c] === "-") {
+                return { row: r, col: c }
             }
         }
     }
