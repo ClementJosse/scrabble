@@ -441,6 +441,7 @@ function isValid() {
 
 function isTouchingFixedLetters(wordLine) {
     if (wordLine.start.row == wordLine.end.row) {
+        // Mot horizontal
         if (wordLine.start.col > 0 && gameBoard.value[wordLine.start.row][wordLine.start.col - 1] != '-') {
             return true
         }
@@ -455,11 +456,12 @@ function isTouchingFixedLetters(wordLine) {
                 return true
             }
         }
-        if (wordLine.start.col < 14 && gameBoard.value[wordLine.end.row][wordLine.end.col + 1] != '-') {
+        if (wordLine.end.col < 14 && gameBoard.value[wordLine.end.row][wordLine.end.col + 1] != '-') {
             return true
         }
     }
     else {
+        // Mot vertical
         if (wordLine.start.row > 0 && gameBoard.value[wordLine.start.row - 1][wordLine.start.col] != '-') {
             return true
         }
@@ -474,7 +476,7 @@ function isTouchingFixedLetters(wordLine) {
                 return true
             }
         }
-        if (wordLine.start.row < 14 && gameBoard.value[wordLine.end.row + 1][wordLine.end.col] != '-') {
+        if (wordLine.end.row < 14 && gameBoard.value[wordLine.end.row + 1][wordLine.end.col] != '-') {
             return true
         }
     }
@@ -494,6 +496,7 @@ function checkMove(wordLine) {
 
         // récupération de la lettre la plus à gauche du mot
         head.row = wordLine.start.row
+        head.col = wordLine.start.col
         for (let c = wordLine.start.col; c >= 0; c--) {
             if (board.value[head.row][c] != "") {
                 head.col = c
@@ -504,14 +507,27 @@ function checkMove(wordLine) {
         }
         console.log(head, board.value[head.row][head.col])
 
-        // calcul du mot principal
-        for (let c = head.col; c <= wordLine.end.col; c++) {
-            spineWord += board.value[wordLine.start.row][c]
-            spineValue += letterToValue[board.value[wordLine.start.row][c]]
-            if (board.value[wordLine.start.row][c] != '' && gameBoard.value[wordLine.start.row][c] != '-') {
-                console.log('skip recherche secondaire', gameBoard.value[wordLine.start.row][c]);
+        // calcul du mot principal - on va jusqu'à la fin du mot complet
+        let endCol = wordLine.end.col
+        for (let c = wordLine.end.col + 1; c < 15; c++) {
+            if (board.value[wordLine.start.row][c] != "") {
+                endCol = c
             }
             else {
+                break
+            }
+        }
+
+        for (let c = head.col; c <= endCol; c++) {
+            spineWord += board.value[wordLine.start.row][c]
+            spineValue += letterToValue[board.value[wordLine.start.row][c]]
+
+            // Si c'est une lettre déjà présente sur le plateau, on ne compte pas les multiplicateurs
+            if (gameBoard.value[wordLine.start.row][c] != '-') {
+                console.log('déjà présent, pas de multiplicateur');
+            }
+            else {
+                // Application des multiplicateurs pour les nouvelles lettres
                 if (boardCell[wordLine.start.row][c] != '') {
                     if (boardCell[wordLine.start.row][c] == 'L2') {
                         spineValue += letterToValue[board.value[wordLine.start.row][c]]
@@ -526,34 +542,96 @@ function checkMove(wordLine) {
                         spineMulti *= 3
                     }
                 }
-                if (wordLine.start.row + 1 < 15 && board.value[wordLine.start.row + 1][c] != "" || wordLine.start.row - 1 >= 0 && board.value[wordLine.start.row - 1][c] != "") {
-                    console.log('mot a compter au dessus ou en dessous de', board.value[wordLine.start.row][c]);
+
+                // Vérification des mots secondaires verticaux 
+                if ((wordLine.start.row + 1 < 15 && board.value[wordLine.start.row + 1][c] != "") || (wordLine.start.row - 1 >= 0 && board.value[wordLine.start.row - 1][c] != "")) {
+                    console.log('mot vertical secondaire à compter pour', board.value[wordLine.start.row][c]);
                     wordsAndValue.push(getSecondaryWordCol(wordLine.start.row, c))
                 }
             }
-
         }
-
     }
     // Si le spineWord est vertical
     else {
+        // ici le col est fixe, on itère sur le row
 
+        // récupération de la lettre la plus en haut du mot
+        head.col = wordLine.start.col
+        head.row = wordLine.start.row
+        for (let r = wordLine.start.row; r >= 0; r--) {
+            if (board.value[r][head.col] != "") {
+                head.row = r
+            }
+            else {
+                break
+            }
+        }
+        console.log(head, board.value[head.row][head.col])
+
+        // calcul du mot principal - on va jusqu'à la fin du mot complet
+        let endRow = wordLine.end.row
+        for (let r = wordLine.end.row + 1; r < 15; r++) {
+            if (board.value[r][wordLine.start.col] != "") {
+                endRow = r
+            }
+            else {
+                break
+            }
+        }
+
+        for (let r = head.row; r <= endRow; r++) {
+            spineWord += board.value[r][wordLine.start.col]
+            spineValue += letterToValue[board.value[r][wordLine.start.col]]
+
+            // Si c'est une lettre déjà présente sur le plateau, on ne compte pas les multiplicateurs
+            if (gameBoard.value[r][wordLine.start.col] != '-') {
+                console.log('lettre déjà présente, pas de multiplicateur');
+            }
+            else {
+                // Application des multiplicateurs pour les nouvelles lettres
+                if (boardCell[r][wordLine.start.col] != '') {
+                    if (boardCell[r][wordLine.start.col] == 'L2') {
+                        spineValue += letterToValue[board.value[r][wordLine.start.col]]
+                    }
+                    if (boardCell[r][wordLine.start.col] == 'L3') {
+                        spineValue += letterToValue[board.value[r][wordLine.start.col]] * 2
+                    }
+                    if (boardCell[r][wordLine.start.col] == 'M2' || boardCell[r][wordLine.start.col] == '★') {
+                        spineMulti *= 2
+                    }
+                    if (boardCell[r][wordLine.start.col] == 'M3') {
+                        spineMulti *= 3
+                    }
+                }
+
+                // Vérification des mots secondaires horizontaux
+                if ((wordLine.start.col + 1 < 15 && board.value[r][wordLine.start.col + 1] != "") ||
+                    (wordLine.start.col - 1 >= 0 && board.value[r][wordLine.start.col - 1] != "")) {
+                    console.log('mot horizontal secondaire à compter pour', board.value[r][wordLine.start.col]);
+                    wordsAndValue.push(getSecondaryWordRow(r, wordLine.start.col))
+                }
+            }
+        }
     }
+
     console.log();
     console.log(spineWord);
     console.log(wordsAndValue)
-
-    wordsAndValue.push({ "value": spineValue * spineMulti, "isValid": props.listeMots.includes(spineWord.toLowerCase()) })
+    if (spineWord.length > 1) {
+        wordsAndValue.push({ "value": spineValue * spineMulti, "isValid": props.listeMots.includes(spineWord.toLowerCase()) })
+    }
     playScore.value = wordsAndValue.reduce((total, item) => total + item.value, 0)
     return wordsAndValue.every(item => item.isValid);
 }
 
 function getSecondaryWordCol(row, col) {
-    // ici col doit etre fixe, on itère sur le row 
+    // ici col est fixe, on itère sur le row 
     let secondHead = { row: row, col: col }
     var secondWord = ''
     var secondValue = 0
     var secondMulti = 1
+
+    // Trouve le début du mot vertical
     for (let r = row; r >= 0; r--) {
         if (board.value[r][col] != "") {
             secondHead.row = r
@@ -562,11 +640,14 @@ function getSecondaryWordCol(row, col) {
             break
         }
     }
-    // on a ici la position de la première lettre du mot secondaire, on peut commencer à le compter.
+
+    // Calcul du mot vertical secondaire
     for (let r = secondHead.row; r < 15; r++) {
         if (board.value[r][col] != "") {
             secondWord += board.value[r][col]
             secondValue += letterToValue[board.value[r][col]]
+
+            // Multiplicateurs seulement pour les nouvelles lettres
             if (gameBoard.value[r][col] == "-") {
                 if (boardCell[r][col] != '') {
                     if (boardCell[r][col] == 'L2') {
@@ -591,10 +672,60 @@ function getSecondaryWordCol(row, col) {
     return { "value": secondValue * secondMulti, "isValid": props.listeMots.includes(secondWord.toLowerCase()) }
 }
 
+function getSecondaryWordRow(row, col) {
+    // ici row est fixe, on itère sur le col 
+    let secondHead = { row: row, col: col }
+    var secondWord = ''
+    var secondValue = 0
+    var secondMulti = 1
+
+    // Trouve le début du mot horizontal
+    for (let c = col; c >= 0; c--) {
+        if (board.value[row][c] != "") {
+            secondHead.col = c
+        }
+        else {
+            break
+        }
+    }
+
+    // Calcul du mot horizontal secondaire
+    for (let c = secondHead.col; c < 15; c++) {
+        if (board.value[row][c] != "") {
+            secondWord += board.value[row][c]
+            secondValue += letterToValue[board.value[row][c]]
+
+            // Multiplicateurs seulement pour les nouvelles lettres
+            if (gameBoard.value[row][c] == "-") {
+                if (boardCell[row][c] != '') {
+                    if (boardCell[row][c] == 'L2') {
+                        secondValue += letterToValue[board.value[row][c]]
+                    }
+                    if (boardCell[row][c] == 'L3') {
+                        secondValue += letterToValue[board.value[row][c]] * 2
+                    }
+                    if (boardCell[row][c] == 'M2' || boardCell[row][c] == '★') {
+                        secondMulti *= 2
+                    }
+                    if (boardCell[row][c] == 'M3') {
+                        secondMulti *= 3
+                    }
+                }
+            }
+        }
+        else {
+            break
+        }
+    }
+    return { "value": secondValue * secondMulti, "isValid": props.listeMots.includes(secondWord.toLowerCase()) }
+}
+
 function isAligned() {
     let topLeftLetter = getTopLeftLetter()
     let wordLine = { start: topLeftLetter, end: null }
     let inX = false
+
+    // Vérification horizontale d'abord
     for (let c = topLeftLetter.col + 1; c < 15; c++) {
         if (board.value[topLeftLetter.row][c] !== "") {
             wordLine.end = { row: topLeftLetter.row, col: c }
@@ -606,6 +737,8 @@ function isAligned() {
             break
         }
     }
+
+    // Si pas de mot horizontal, vérification verticale
     if (!inX) {
         for (let r = topLeftLetter.row + 1; r < 15; r++) {
             if (board.value[r][topLeftLetter.col] !== "") {
@@ -616,12 +749,16 @@ function isAligned() {
             }
         }
     }
+
     if (wordLine.end == null) {
         wordLine.end = wordLine.start
     }
+
+    // Vérification que toutes les nouvelles lettres sont alignées
     for (let r = 0; r < 15; r++) {
         for (let c = 0; c < 15; c++) {
-            if (board.value[r][c] !== "" && gameBoard.value[r][c] === "-" && !(r >= wordLine.start.row && r <= wordLine.end.row && c >= wordLine.start.col && c <= wordLine.end.col)) {
+            if (board.value[r][c] !== "" && gameBoard.value[r][c] === "-" &&
+                !(r >= wordLine.start.row && r <= wordLine.end.row && c >= wordLine.start.col && c <= wordLine.end.col)) {
                 return false
             }
         }
