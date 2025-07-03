@@ -55,18 +55,18 @@
 
         <!-- Rack des lettres -->
         <div
-            class="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-row bg-base2 p-5 w-[745px] h-[115px] justify-between items-center rounded-xl shadow-base3 shadow-md z-50">
-            <div class="w-[150px] flex justify-center">
+            class="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-row bg-base2 p-3 w-[745px] h-[115px] justify-between items-center rounded-xl shadow-base3 shadow-md z-50">
+            <div class="w-[170px] flex justify-center">
                 <div
                     class="w-[80px] h-[80px] flex justify-center items-center rounded-full bg-base1 text-2xl font-bold text-secondary gap-1">
                     <img src="@/assets/bag.svg" alt="bag of letters" class="cursor-pointer " @click="showBag()" />
                     32
                 </div>
             </div>
-            <div class="flex flex-col">
-                <img src="@/assets/retrieve.svg" alt="retrieve letters" class="cursor-pointer relative h-8"
+            <div class="flex flex-col justify-center items-center">
+                <img v-if="hasLettersOnBoard" src="@/assets/retrieve.svg" alt="retrieve letters" class="cursor-pointer fixed h-8 w-8 -top-5"
                     @click="retrieveLetters()" />
-                <div class="flex justify-center flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-[355px]"
+                <div class="flex justify-center flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-[355px] mt-9"
                     @drop="handleRackDrop($event)" @dragover.prevent>
                     <div v-for="(letter, index) in rackLetters" :key="`rack-${index}`"
                         class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
@@ -85,12 +85,28 @@
                 <img src="@/assets/shuffle.svg" alt="retrieve letters" class="cursor-pointer relative -top-7 h-8"
                     @click="retrieveLetters()" />
             </div>
-            <div class="w-[150px] flex flex-col justify-center items-center gap-2">
-                <span class="text-2xl text-strongblue font-bold">{{ playScore }}pts</span>
-                <button
-                    class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">
-                    Jouer le coup
-                </button>
+            <div class="w-[170px] flex flex-col justify-center items-center gap-2">
+                <div class="flex flex-col justify-center items-center gap-2" v-if="hasLettersOnBoard">
+                    <span v-if="playScore === 0" class="text-2xl text-strongred font-bold">×</span>
+                    <span v-else class="text-2xl font-bold"
+                        :class="(isValidMemoized ? 'text-strongblue' : 'text-strongred')">{{
+                        playScore }}pts</span>
+                    <span v-if="isValidMemoized">
+                        <button v-if="props.UID === props.gameData.playerOrder[props.gameData.playerIndex]"
+                            class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">
+                            Jouer le coup
+                        </button>
+                        <span v-else class="text-strongblue text-sm font-semibold h-5">
+                            Valide au Scrabble
+                        </span>
+                    </span>
+                    <span v-else class="text-strongred text-sm font-semibold">
+                        Non valide au Scrabble
+                    </span>
+                </div>
+                <div>
+                    <!-- Pas de lettre posée, rien ici...-->
+                </div>
             </div>
         </div>
     </div>
@@ -265,6 +281,22 @@ const preventPan = (event) => {
     event.stopPropagation()
 }
 
+
+// Computed pour vérifier s'il y a des lettres sur le terrain
+const hasLettersOnBoard = computed(() => {
+    if (!gameBoard.value) return false
+    
+    // Vérifier s'il y a des lettres nouvellement placées (non fixes)
+    for (let row = 0; row < 15; row++) {
+        for (let col = 0; col < 15; col++) {
+            if (board.value[row][col] !== '' && gameBoard.value[row][col] === '-') {
+                return true
+            }
+        }
+    }
+    return false
+})
+
 // Variables pour le drag & drop
 const draggedItem = ref(null)
 const dragSource = ref(null) // 'rack' ou 'board'
@@ -404,8 +436,24 @@ const showBag = () => {
 }
 
 const retrieveLetters = () => {
-    console.log('Retrieve letters')
-}
+    // Parcourir le plateau pour récupérer les lettres non fixes
+    for (let row = 0; row < 15; row++) {
+        for (let col = 0; col < 15; col++) {
+            if (board.value[row][col] !== '' && !isFixed(row, col)) {
+                // Ajouter la lettre au rack
+                rackLetters.value.push(board.value[row][col]);
+            }
+        }
+    }
+
+    // Réinitialiser le plateau avec les valeurs de gameBoard
+    if (gameBoard.value) {
+        updateBoard(gameBoard.value);
+    }
+
+    // Réinitialiser le score du jeu
+    playScore.value = 0;
+};
 
 
 const playScore = ref(0)
@@ -420,12 +468,12 @@ function isValid() {
         if (gameBoard.value.every(cell => cell === '---------------')) {
             console.log("plateau vierge")
             /* calcul des points du mot */
-            playScore.value = 10
             // Si l'une des lettres touche le centre
             if (wordLine.start.row == 7 && wordLine.end.row == 7 && wordLine.start.col <= 7 && wordLine.end.col >= 7) {
                 // Verification si le mot existe au scrabble
                 let word = board.value[7].slice(wordLine.start.col, wordLine.end.col + 1).join('');
                 console.log(props.listeMots.includes(word.toLowerCase()), word.toLowerCase())
+                checkMove(wordLine)
                 return props.listeMots.includes(word.toLowerCase())
             }
         }

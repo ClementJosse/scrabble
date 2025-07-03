@@ -30,10 +30,10 @@
                     </div>
                     <div v-if="mot && !isSearching" class="pt-2 text-primary text-sm flex flex-col flex-grow min-h-0">
                         <div class="flex-shrink-0">
-                            <span v-if="motValide" class="flex justify-center text-lg text-strongblue font-semibold">est
-                                valide au Scrabble</span>
-                            <span v-else class="flex justify-center text-lg text-strongred font-semibold">n'est pas
-                                valide au Scrabble</span>
+                            <span v-if="motValide" class="flex justify-center text-lg text-strongblue font-semibold">
+                                Valide au Scrabble</span>
+                            <span v-else class="flex justify-center text-lg text-strongred font-semibold">
+                                Non valide au Scrabble</span>
                         </div>
 
                         <div class="mt-3 overflow-y-auto flex-grow min-h-0 custom-scrollbar">
