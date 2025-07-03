@@ -407,23 +407,6 @@ const retrieveLetters = () => {
     console.log('Retrieve letters')
 }
 
-function countWord(row, col, direction){
-
-}
-
-function checkWord(row, col, direction){
-    
-}
-
-function checkMove(row, col){ // return true/false + les points
-    // var score = 0
-    // var wordList = {}
-    // check a gauche s'il y a une lettre
-        // while : se déplacer vers la lettre la plus à gauche
-            // une fois dessus, score+=countWord()
-            // wordList.add(checkword())
-        
-}
 
 const playScore = ref(0)
 
@@ -446,13 +429,16 @@ function isValid() {
                 return props.listeMots.includes(word.toLowerCase())
             }
         }
-        else{
+        else{ // Sinon (si le plateau n'est pas vierge)
             console.log("plateau non vide")        
-            // Sinon (si le plateau n'est pas vierge)
-                // Si au moins une lettre de board touche une lettre fixed du gameBoard
+                if(isTouchingFixedLetters(wordLine)){ // Si au moins une lettre de board touche une lettre fixed du gameBoard
+                    return true
                     // recherche de la lettre la plus en haut a gauche
                         // appel de la fonction récursive de coupvalide+comptage de point
-                        /* return true || false*/ 
+                            /* return true || false*/ 
+                }
+                
+                    
         }
            
             
@@ -461,6 +447,61 @@ function isValid() {
         
         
     return false
+}
+
+function isTouchingFixedLetters(wordLine){
+    if(wordLine.start.row == wordLine.end.row){
+        if(wordLine.start.col>0 && gameBoard.value[wordLine.start.row][wordLine.start.col-1]!='-'){
+            return true
+        }
+        for(let c = wordLine.start.col; c<=wordLine.end.col; c++){
+            if(gameBoard.value[wordLine.start.row][c]!='-'){
+                return true
+            }
+            if(wordLine.start.row>0 && gameBoard.value[wordLine.start.row-1][c]!='-'){
+                return true
+            }
+            if(wordLine.start.row<15 && gameBoard.value[wordLine.start.row+1][c]!='-'){
+                return true
+            }
+        }
+        if(wordLine.start.col<14 && gameBoard.value[wordLine.end.row][wordLine.end.col+1]!='-'){
+            return true
+        }
+    }
+    else{
+        if(wordLine.start.row>0 && gameBoard.value[wordLine.start.row-1][wordLine.start.col]!='-'){
+            return true
+        }
+        for(let r = wordLine.start.row; r<=wordLine.end.row; r++){
+            if(gameBoard.value[r][wordLine.start.col]!='-'){
+                return true
+            }
+            if(wordLine.start.col>0 && gameBoard.value[r][wordLine.start.col-1]!='-'){
+                return true
+            }
+            if(wordLine.start.col<15 && gameBoard.value[r][wordLine.start.col+1]!='-'){
+                return true
+            }
+        }
+        if(wordLine.start.row<14 && gameBoard.value[wordLine.end.row+1][wordLine.end.col]!='-'){
+            return true
+        }
+    }
+    return false
+}
+
+function checkMove(wordLine){
+    var head = {col:0,row:0}
+    if(wordLine.row.start == wordLine.row.end){
+        head.row = wordLine.row.start
+        for(c = wordLine.col.start; c>=0; c--){
+            head.col=c
+        }
+    }
+    else{
+
+    }
 }
 
 function isAligned(){
