@@ -1,7 +1,7 @@
 <template>
   <div class="flex bg-base2 rounded-2xl px-4 py-3 justify-between items-center w-[330px] fixed top-6 right-6 shadow-md shadow-base3">
     <div class="flex flex-col w-[150px]">
-      <span class="text-secondary text-xl font-semibold">Tour</span>
+      <span class="text-secondary text-xl font-semibold gap-1">Tour {{ props.gameData.turn }}</span>
       <span class="text-primary text-4xl font-bold -mt-[5px]">{{ format(time) }}</span>
       <button v-if="isCurrentPlayer" @click="passTurn"class="mt-4 font-medium ring ring-red text-sm fill-lightred text-red rounded bg-lightred w-[120px] ring-2">Passer le tour</button></div>
     <div class="flex flex-col w-auto">

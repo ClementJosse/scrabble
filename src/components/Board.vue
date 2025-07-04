@@ -160,6 +160,10 @@ async function playMove() {
     // Calculer le prochain index de joueur
     const nextIndex = (props.gameData.playerIndex + 1) % props.gameData.playerOrder.length;
 
+    // Calculer si on est au prochain tour
+    console.log('nextIndex.value',nextIndex)
+    const updatedTurn = nextIndex === 0 ? props.gameData.turn+1 : props.gameData.turn
+
     // Compter les lettres placées sur le board
     const placedLettersCount = countPlacedLetters();
 
@@ -198,7 +202,8 @@ async function playMove() {
         bagTile: updatedBagTile,
         playerLetters: updatedPlayerLetters,
         scores: updatedScores,
-        gameStatus: gameStatus
+        gameStatus: gameStatus,
+        turn: updatedTurn
     });
 
     // Update du gameBoard
