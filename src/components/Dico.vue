@@ -38,7 +38,7 @@
 
                         <div class="mt-3 overflow-y-auto flex-grow min-h-0 custom-scrollbar">
                             <span v-if="motValide && definitions.length"
-                                class="ml-5 text-sm pt-4 text-secondary">Définition:</span>
+                                class="ml-5 text-base pt-4 text-primary font-medium h-[24px]"> Définition:</span>
                             <div v-if="motValide && definitions.length" class="bg-base1 rounded-lg mx-5 p-2 mb-4">
                                 <ul class="list-disc list-inside space-y-1 text-overflow-hidden">
                                     <li v-for="(definition, index) in definitions" :key="index">
@@ -48,7 +48,7 @@
                             </div>
 
                             <div v-if="suggestions.length" class="mt-3 pb-4">
-                                <span class="text-secondary text-sm mx-5">Propositions de mots :</span>
+                                <span class="text-primary font-medium text-base mx-5">Propositions de mots :</span>
                                 <ul class="list-disc list-inside space-y-1 mt-1 mx-5">
                                     <li v-for="(suggestion, index) in suggestions" :key="index"
                                         class="flex flex-row text-lg">
