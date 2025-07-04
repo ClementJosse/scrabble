@@ -555,6 +555,7 @@ const handleRackLetterDrop = (targetIndex, event) => {
     }
 
     // Échange des lettres
+    // TODO ne pas echanger mais faire une insertion avec animation de translation
     const sourceIndex = dragSourceIndex.value
     const targetLetter = rackLetters.value[targetIndex]
     const sourceLetter = rackLetters.value[sourceIndex]
@@ -835,6 +836,9 @@ function checkMove(wordLine) {
         wordsAndValue.push({ "value": spineValue * spineMulti, "isValid": props.listeMots.includes(spineWord.toLowerCase()) })
     }
     playScore.value = wordsAndValue.reduce((total, item) => total + item.value, 0)
+    if(countPlacedLetters() == 7){
+        playScore.value += 50
+    }
     return wordsAndValue.every(item => item.isValid);
 }
 
