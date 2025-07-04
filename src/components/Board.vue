@@ -64,13 +64,15 @@
                 </div>
             </div>
             <div class="flex flex-col justify-center items-center">
-                <img v-if="hasLettersOnBoard" src="@/assets/retrieve.svg" alt="retrieve letters" class="cursor-pointer fixed h-8 w-8 -top-5"
-                    @click="retrieveLetters()" />
+                <img v-if="hasLettersOnBoard" src="@/assets/retrieve.svg" alt="retrieve letters"
+                    class="cursor-pointer fixed h-8 w-8 -top-5" @click="retrieveLetters()" />
                 <div class="flex justify-center flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-[355px] mt-9"
                     @drop="handleRackDrop($event)" @dragover.prevent>
                     <div v-for="(letter, index) in rackLetters" :key="`rack-${index}`"
                         class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
-                        :draggable="true" @dragstart="handleRackDragStart(index, $event)" @mousedown.stop="preventPan">
+                        :draggable="true" @dragstart="handleRackDragStart(index, $event)" @mousedown.stop="preventPan"
+                        @drop="handleRackLetterDrop(index, $event)"
+                        @dragover.prevent="handleRackLetterDragOver(index, $event)" @dragenter.prevent>
                         {{ letter }}
                         <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">
                             {{ letterToValue[letter] }}
@@ -82,15 +84,15 @@
                     </div>
                 </div>
                 <span class="relative h-2 w-full bg-secondary -top-[8px]"></span>
-                <img src="@/assets/shuffle.svg" alt="retrieve letters" class="cursor-pointer relative -top-7 h-8"
-                    @click="retrieveLetters()" />
+                <img src="@/assets/shuffle.svg" alt="shuffle letters" class="cursor-pointer relative -top-7 h-8"
+                    @click="shuffleRackLetters()" />
             </div>
             <div class="w-[170px] flex flex-col justify-center items-center gap-2">
                 <div class="flex flex-col justify-center items-center gap-2" v-if="hasLettersOnBoard">
                     <span v-if="playScore === 0" class="text-2xl text-strongred font-bold">×</span>
                     <span v-else class="text-2xl font-bold"
                         :class="(isValidMemoized ? 'text-strongblue' : 'text-strongred')">{{
-                        playScore }}pts</span>
+                            playScore }}pts</span>
                     <span v-if="isValidMemoized">
                         <button v-if="props.UID === props.gameData.playerOrder[props.gameData.playerIndex]"
                             class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">
@@ -285,7 +287,7 @@ const preventPan = (event) => {
 // Computed pour vérifier s'il y a des lettres sur le terrain
 const hasLettersOnBoard = computed(() => {
     if (!gameBoard.value) return false
-    
+
     // Vérifier s'il y a des lettres nouvellement placées (non fixes)
     for (let row = 0; row < 15; row++) {
         for (let col = 0; col < 15; col++) {
@@ -396,7 +398,17 @@ const handleCellDrop = (row, col, event) => {
 // Drop sur le rack
 const handleRackDrop = (event) => {
     event.preventDefault()
-    if (!draggedItem.value || dragSource.value === 'rack') return
+    if (!draggedItem.value) return
+
+    // Si on vient du rack et qu'on drop dans une zone vide, on ne fait rien
+    if (dragSource.value === 'rack') {
+        // Reset sans action
+        draggedItem.value = null
+        dragSource.value = null
+        dragSourceIndex.value = null
+        isDragging.value = false
+        return
+    }
 
     // Seulement depuis le board vers le rack
     if (dragSource.value === 'board') {
@@ -413,6 +425,55 @@ const handleRackDrop = (event) => {
 
     // Déclencher la validation avec debounce
     triggerValidation()
+}
+
+const handleRackLetterDragOver = (targetIndex, event) => {
+    event.preventDefault()
+    if (draggedItem.value && dragSource.value === 'rack' && dragSourceIndex.value !== targetIndex) {
+        event.dataTransfer.dropEffect = 'move'
+    } else {
+        event.dataTransfer.dropEffect = 'none'
+    }
+}
+
+const handleRackLetterDrop = (targetIndex, event) => {
+    event.preventDefault()
+    event.stopPropagation() // Empêcher la propagation vers le drop du rack global
+
+    if (!draggedItem.value || dragSource.value !== 'rack' || dragSourceIndex.value === targetIndex) {
+        return
+    }
+
+    // Échange des lettres
+    const sourceIndex = dragSourceIndex.value
+    const targetLetter = rackLetters.value[targetIndex]
+    const sourceLetter = rackLetters.value[sourceIndex]
+
+    // Effectuer l'échange
+    rackLetters.value[sourceIndex] = targetLetter
+    rackLetters.value[targetIndex] = sourceLetter
+
+    // Reset
+    draggedItem.value = null
+    dragSource.value = null
+    dragSourceIndex.value = null
+    isDragging.value = false
+}
+
+const shuffleArray = (array) => {
+    const shuffled = [...array] // Créer une copie pour éviter la mutation
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+    }
+    return shuffled
+}
+
+// Fonction pour mélanger les lettres du rack
+const shuffleRackLetters = () => {
+    if (rackLetters.value.length > 1) {
+        rackLetters.value = shuffleArray(rackLetters.value)
+    }
 }
 
 // Variables pour le debounce et la mémorisation de isValid
