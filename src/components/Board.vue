@@ -59,7 +59,7 @@
             <div class="w-[170px] flex justify-center">
                 <div
                     class="w-[80px] h-[80px] flex justify-center items-center rounded-full bg-base1 text-2xl font-bold text-secondary gap-1">
-                    <img src="@/assets/bag.svg" alt="bag of letters"/>
+                    <img src="@/assets/bag.svg" alt="bag of letters" />
                     {{ bagSize }}
                 </div>
             </div>
@@ -94,7 +94,8 @@
                         :class="(isValidMemoized ? 'text-strongblue' : 'text-strongred')">{{
                             playScore }}pts</span>
                     <span v-if="isValidMemoized">
-                        <button v-if="props.UID === props.gameData.playerOrder[props.gameData.playerIndex]" @click="playMove()"
+                        <button v-if="props.UID === props.gameData.playerOrder[props.gameData.playerIndex]"
+                            @click="playMove()"
                             class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">
                             Jouer le coup
                         </button>
@@ -116,6 +117,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import { getDatabase, ref as dbRef, onValue, set, get, update, onDisconnect, serverTimestamp } from 'firebase/database'
 
 const props = defineProps({
     UID: String,
@@ -125,6 +127,112 @@ const props = defineProps({
 })
 
 const bagSize = ref(Object.values(props.gameData.bagTile).reduce((a, b) => a + b, 0))
+const database = getDatabase()
+
+async function playMove() {
+    // Créer le nouveau board avec les lettres placées
+    let newBoard = [];
+    for (let i = 0; i < 15; i++) {
+        newBoard[i] = [];
+        for (let j = 0; j < 15; j++) {
+            const currentCell = gameBoard.value[i][j];
+            if (currentCell === '-' && board.value[i][j] !== '') {
+                newBoard[i][j] = board.value[i][j];
+            } else {
+                newBoard[i][j] = currentCell;
+            }
+        }
+    }
+
+    // Calculer le prochain index de joueur
+    const nextIndex = (props.gameData.playerIndex + 1) % props.gameData.playerOrder.length;
+
+    // Compter les lettres placées sur le board
+    const placedLettersCount = countPlacedLetters();
+
+    // Calculer les nouvelles lettres pour le rack depuis le sac
+    const newRackLetters = drawLettersFromBag(placedLettersCount);
+
+    // Mettre à jour le sac de tuiles
+    const updatedBagTile = { ...props.gameData.bagTile };
+    newRackLetters.forEach(letter => {
+        if (updatedBagTile[letter] > 0) {
+            updatedBagTile[letter]--;
+        }
+    });
+
+    // Mettre à jour les lettres du joueur
+    const updatedPlayerLetters = { ...props.gameData.playerLetters };
+    updatedPlayerLetters[props.UID] = [...rackLetters.value, ...newRackLetters].join('');
+
+    // Mettre à jour les scores
+    const updatedScores = { ...props.gameData.scores };
+    if (!updatedScores[props.UID]) {
+        updatedScores[props.UID] = [];
+    }
+    updatedScores[props.UID].push(playScore.value);
+
+    // Déterminer le statut du jeu
+    const bagWasEmpty = Object.values(props.gameData.bagTile).every(count => count === 0);
+    const playerUsedAllLetters = rackLetters.value.length === 0;
+    const gameStatus = (bagWasEmpty && playerUsedAllLetters) ? "finished" : "ingame";
+
+    // Mettre à jour Firebase
+    await update(dbRef(database, props.gameId), {
+        board: newBoard,
+        playerIndex: nextIndex,
+        timestamp: serverTimestamp(),
+        bagTile: updatedBagTile,
+        playerLetters: updatedPlayerLetters,
+        scores: updatedScores,
+        gameStatus: gameStatus
+    });
+
+    // Update du gameBoard
+    for (let i = 0; i < 15; i++) {
+        for (let j = 0; j < 15; j++) {
+            const currentCell = gameBoard.value[i][j];
+            if (currentCell === '-' && board.value[i][j] !== '') {
+                gameBoard.value[i][j] = board.value[i][j];
+            }
+        }
+    }
+}
+
+// Fonction auxiliaire pour compter les lettres placées
+function countPlacedLetters() {
+    let count = 0;
+    for (let row = 0; row < 15; row++) {
+        for (let col = 0; col < 15; col++) {
+            if (board.value[row][col] !== '' && gameBoard.value[row][col] === '-') {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+// Fonction auxiliaire pour piocher des lettres du sac
+function drawLettersFromBag(count) {
+    const newLetters = [];
+    const availableLetters = [];
+
+    // Créer un tableau de lettres disponibles
+    Object.entries(props.gameData.bagTile).forEach(([letter, quantity]) => {
+        for (let i = 0; i < quantity; i++) {
+            availableLetters.push(letter);
+        }
+    });
+
+    // Piocher aléatoirement
+    for (let i = 0; i < Math.min(count, availableLetters.length); i++) {
+        const randomIndex = Math.floor(Math.random() * availableLetters.length);
+        const pickedLetter = availableLetters.splice(randomIndex, 1)[0];
+        newLetters.push(pickedLetter);
+    }
+
+    return newLetters;
+}
 
 const board = ref(
     Array.from({ length: 15 }, () =>
