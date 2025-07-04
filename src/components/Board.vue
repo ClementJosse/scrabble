@@ -316,7 +316,7 @@ const updateBoard = (newBoardData) => {
     if (newBoardData && Array.isArray(newBoardData)) {
         for (let row = 0; row < 15; row++) {
             for (let col = 0; col < 15; col++) {
-                const rowString = newBoardData[row] || '---------------'
+                const rowString = newBoardData[row]
                 const letter = rowString[col] || '-'
                 board.value[row][col] = letter === '-' ? '' : letter
             }
@@ -392,6 +392,16 @@ watch(
     (newBoard, oldBoard) => {
         if (newBoard && JSON.stringify(newBoard) !== JSON.stringify(oldBoard)) {
             updateBoard(newBoard)
+            
+            for (let i = 0; i < 15; i++) {
+                for (let j = 0; j < 15; j++) {
+                    if (gameBoard.value[i][j] == '-' && board.value[i][j] != '') {
+                        gameBoard.value[i][j] = board.value[i][j]
+                    }
+                }
+            }
+            console.log('gameBoard', gameBoard.value)
+            console.log('board', board.value)
             const playerLetters = props.gameData?.playerLetters?.[props.UID] || 'EBARPVC'
             updateRackLetters(playerLetters)
         }
