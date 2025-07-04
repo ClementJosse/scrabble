@@ -59,8 +59,8 @@
             <div class="w-[170px] flex justify-center">
                 <div
                     class="w-[80px] h-[80px] flex justify-center items-center rounded-full bg-base1 text-2xl font-bold text-secondary gap-1">
-                    <img src="@/assets/bag.svg" alt="bag of letters" class="cursor-pointer " @click="showBag()" />
-                    32
+                    <img src="@/assets/bag.svg" alt="bag of letters"/>
+                    {{ bagSize }}
                 </div>
             </div>
             <div class="flex flex-col justify-center items-center">
@@ -94,7 +94,7 @@
                         :class="(isValidMemoized ? 'text-strongblue' : 'text-strongred')">{{
                             playScore }}pts</span>
                     <span v-if="isValidMemoized">
-                        <button v-if="props.UID === props.gameData.playerOrder[props.gameData.playerIndex]"
+                        <button v-if="props.UID === props.gameData.playerOrder[props.gameData.playerIndex]" @click="playMove()"
                             class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">
                             Jouer le coup
                         </button>
@@ -123,6 +123,8 @@ const props = defineProps({
     gameId: String,
     listeMots: Object
 })
+
+const bagSize = ref(Object.values(props.gameData.bagTile).reduce((a, b) => a + b, 0))
 
 const board = ref(
     Array.from({ length: 15 }, () =>
@@ -489,11 +491,6 @@ const triggerValidation = () => {
     validationTimeout = setTimeout(() => {
         isValidMemoized.value = isValid()
     }, 1)
-}
-
-// Fonctions manquantes
-const showBag = () => {
-    console.log('Show bag')
 }
 
 const retrieveLetters = () => {
