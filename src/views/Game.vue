@@ -11,7 +11,7 @@
         </div>
         <div v-else-if="isInGame && isPlayerInGame">
             <div>
-                <Dico :isLeader="gameData.leader === UID" :ods9="ods9" :listeMots="listeMots"/>
+                <Dico :gameId="gameId" :gameData="gameData" :isLeader="gameData.leader === UID" :ods9="ods9" :listeMots="listeMots"/>
             </div>
             <div>
                 <Board :UID="UID" :gameData="gameData" :gameId="gameId" :listeMots="listeMots"/> 
@@ -76,7 +76,7 @@ const initialize = async () => {
             gameData.value = data
             if (data) {
                 // Les 3 valeurs possible du ".gameStatus"
-                isInGame.value = (data.gameStatus === 'ingame')
+                isInGame.value = (data.gameStatus === 'ingame' || data.gameStatus === 'finished' )
                 isInLobby.value = (data.gameStatus === 'lobby')
                 isCreating.value = (data.gameStatus === 'increation')
 

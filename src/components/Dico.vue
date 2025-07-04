@@ -1,4 +1,12 @@
 <template>
+    <div v-if="isShowReturnMenu" class="z-[100] bg-[#000000] bg-opacity-50 w-screen h-screen fixed flex justify-center items-center " @click="showReturnMenu()">
+        <div class="bg-base1 flex flex-col justify-between h-[400px] items-center flex-col p-10 rounded-xl text-primary text-3xl font-bold">
+            Retourner au Lobby ?
+            <span class="text-secondary text-base mb-[80px] font-semibold">La partie sera réinitialisé et les scores seront perdus. </span>
+            <button class="px-4 py-3 bg-secondary rounded-xl text-base1 inter-bold flex items-center justify-center w-[300px] h-[60px] text-xl" @click="returnToLobby()">Retourner au lobby </button>
+        </div>
+
+    </div>
     <div class="fixed top-[125px] left-6 z-40">
         <div v-if="isLeader" class="mb-10 ml-4 h-10">
             <img src="@/assets/lobby.svg" alt="return to lobby" class="cursor-pointer rounded-lg"
@@ -69,17 +77,21 @@
 
 <script setup>
 import { onMounted, ref, watch } from 'vue'
+import { getDatabase, ref as dbRef, onValue, set, get, update, onDisconnect, serverTimestamp } from 'firebase/database'
+const database = getDatabase()
 
 const mot = ref("")
 const motValide = ref(false)
 const definitions = ref([])
 const suggestions = ref([])
 const isSearching = ref(false)
-
+const isShowReturnMenu = ref(false)
 const props = defineProps({
     isLeader: Boolean,
     listeMots: Object,
     ods9: Object,
+    gameData: Object,
+    gameId: Object
 })
 
 const isDicoVisible = ref(true)
@@ -89,7 +101,7 @@ function showDico() {
 }
 
 function showReturnMenu() {
-    console.log("afficher le menu pour retourner au lobby")
+    isShowReturnMenu.value = !isShowReturnMenu.value
 }
 
 function clearInput() {
@@ -97,6 +109,11 @@ function clearInput() {
     isSearching.value = false
 }
 
+async function returnToLobby(){
+    await update(dbRef(database, props.gameId), {
+        gameStatus: "lobby"
+    });
+}
 
 function normaliser(texte) {
     return texte

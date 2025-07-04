@@ -56,59 +56,72 @@
         <!-- Rack des lettres -->
         <div
             class="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-row bg-base2 p-3 w-[745px] h-[115px] justify-between items-center rounded-xl shadow-base3 shadow-md z-50">
-            <div class="w-[170px] flex justify-center">
-                <div
-                    class="w-[80px] h-[80px] flex justify-center items-center rounded-full bg-base1 text-2xl font-bold text-secondary gap-1">
-                    <img src="@/assets/bag.svg" alt="bag of letters" />
-                    {{ bagSize }}
-                </div>
+            <div v-if="props.gameData.gameStatus === 'finished'" class="flex flex-col justify-center items-center w-full gap-3">
+                <span class="flex flex-row justify-center items-center gap-1 text-primary font-semibold text-xl">
+                    <span
+                        class="flex flex-row px-3 ml-5 py-1 bg-primary rounded-full text-xl inter-bold text-base1 gap-2 w-fit">
+                        {{ getWinner() }}
+                    </span>
+                    a gagné
+                </span>
+                <span v-if="props.UID !== props.gameData.leader" class="text-secondary text-sm"> En attente du créateur de la partie...</span>
+                <button v-else class="px-4 py-3 bg-secondary rounded-xl text-base1 inter-bold flex items-center justify-center w-[250px] h-[40px]" @click="returnToLobby()"> Retourner au Lobby</button>
             </div>
-            <div class="flex flex-col justify-center items-center">
-                <img v-if="hasLettersOnBoard" src="@/assets/retrieve.svg" alt="retrieve letters"
-                    class="cursor-pointer fixed h-8 w-8 -top-5" @click="retrieveLetters()" />
-                <div class="flex justify-center flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-[355px] mt-9"
-                    @drop="handleRackDrop($event)" @dragover.prevent>
-                    <div v-for="(letter, index) in rackLetters" :key="`rack-${index}`"
-                        class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
-                        :draggable="true" @dragstart="handleRackDragStart(index, $event)" @mousedown.stop="preventPan"
-                        @drop="handleRackLetterDrop(index, $event)"
-                        @dragover.prevent="handleRackLetterDragOver(index, $event)" @dragenter.prevent>
-                        {{ letter }}
-                        <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">
-                            {{ letterToValue[letter] }}
-                        </span>
-                    </div>
-                    <!-- Cases vides pour compléter le rack -->
-                    <div v-for="emptySlot in Math.max(0, 7 - rackLetters.length)" :key="`empty-${emptySlot}`"
-                        class="h-11 w-11 rounded-lg border-2 border-dashed border-base3">
+            <div v-else class="flex flex-row bg-base2 p-3 w-[745px] h-[115px] justify-between items-center">
+                <div class="w-[170px] flex justify-center">
+                    <div
+                        class="w-[80px] h-[80px] flex justify-center items-center rounded-full bg-base1 text-2xl font-bold text-secondary gap-1">
+                        <img src="@/assets/bag.svg" alt="bag of letters" />
+                        {{ bagSize }}
                     </div>
                 </div>
-                <span class="relative h-2 w-full bg-secondary -top-[8px]"></span>
-                <img src="@/assets/shuffle.svg" alt="shuffle letters" class="cursor-pointer relative -top-7 h-8"
-                    @click="shuffleRackLetters()" />
-            </div>
-            <div class="w-[170px] flex flex-col justify-center items-center gap-2">
-                <div class="flex flex-col justify-center items-center gap-2" v-if="hasLettersOnBoard">
-                    <span v-if="playScore === 0" class="text-2xl text-strongred font-bold">×</span>
-                    <span v-else class="text-2xl font-bold"
-                        :class="(isValidMemoized ? 'text-strongblue' : 'text-strongred')">{{
-                            playScore }}pts</span>
-                    <span v-if="isValidMemoized">
-                        <button v-if="props.UID === props.gameData.playerOrder[props.gameData.playerIndex]"
-                            @click="playMove()"
-                            class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">
-                            Jouer le coup
-                        </button>
-                        <span v-else class="text-strongblue text-sm font-semibold h-5">
-                            Valide au Scrabble
-                        </span>
-                    </span>
-                    <span v-else class="text-strongred text-sm font-semibold">
-                        Non valide au Scrabble
-                    </span>
+                <div class="flex flex-col justify-center items-center">
+                    <img v-if="hasLettersOnBoard" src="@/assets/retrieve.svg" alt="retrieve letters"
+                        class="cursor-pointer fixed h-8 w-8 -top-5" @click="retrieveLetters()" />
+                    <div class="flex justify-center flex-row gap-1 bg-base1 p-3 pb-6 mt-1 rounded-lg w-[355px] mt-9"
+                        @drop="handleRackDrop($event)" @dragover.prevent>
+                        <div v-for="(letter, index) in rackLetters" :key="`rack-${index}`"
+                            class="h-11 w-11 rounded-lg select-none flex items-center justify-center bg-base2 border-secondary border-2 cursor-grab active:cursor-grabbing relative z-10 font-bold text-xl text-primary"
+                            :draggable="true" @dragstart="handleRackDragStart(index, $event)"
+                            @mousedown.stop="preventPan" @drop="handleRackLetterDrop(index, $event)"
+                            @dragover.prevent="handleRackLetterDragOver(index, $event)" @dragenter.prevent>
+                            {{ letter }}
+                            <span class="text-[12px] absolute right-[2px] bottom-[1px] h-[20px]">
+                                {{ letterToValue[letter] }}
+                            </span>
+                        </div>
+                        <!-- Cases vides pour compléter le rack -->
+                        <div v-for="emptySlot in Math.max(0, 7 - rackLetters.length)" :key="`empty-${emptySlot}`"
+                            class="h-11 w-11 rounded-lg border-2 border-dashed border-base3">
+                        </div>
+                    </div>
+                    <span class="relative h-2 w-full bg-secondary -top-[8px]"></span>
+                    <img src="@/assets/shuffle.svg" alt="shuffle letters" class="cursor-pointer relative -top-7 h-8"
+                        @click="shuffleRackLetters()" />
                 </div>
-                <div>
-                    <!-- Pas de lettre posée, rien ici...-->
+                <div class="w-[170px] flex flex-col justify-center items-center gap-2">
+                    <div class="flex flex-col justify-center items-center gap-2" v-if="hasLettersOnBoard">
+                        <span v-if="playScore === 0" class="text-2xl text-strongred font-bold">×</span>
+                        <span v-else class="text-2xl font-bold"
+                            :class="(isValidMemoized ? 'text-strongblue' : 'text-strongred')">{{
+                                playScore }}pts</span>
+                        <span v-if="isValidMemoized">
+                            <button v-if="props.UID === props.gameData.playerOrder[props.gameData.playerIndex]"
+                                @click="playMove()"
+                                class="px-6 py-[5px] bg-lightblue border-2 border-strongblue text-strongblue font-semibold rounded-lg text-sm">
+                                Jouer le coup
+                            </button>
+                            <span v-else class="text-strongblue text-sm font-semibold h-5">
+                                Valide au Scrabble
+                            </span>
+                        </span>
+                        <span v-else class="text-strongred text-sm font-semibold">
+                            Non valide au Scrabble
+                        </span>
+                    </div>
+                    <div>
+                        <!-- Pas de lettre posée, rien ici...-->
+                    </div>
                 </div>
             </div>
         </div>
@@ -197,6 +210,23 @@ async function playMove() {
             }
         }
     }
+}
+
+const getWinner= () => {
+  return props.gameData.idToPlayer[Object.entries(props.gameData.scores)
+    .map(([player, rounds]) => ({
+      player,
+      totalScore: rounds.reduce((sum, score) => sum + score, 0)
+    }))
+    .reduce((best, current) => 
+      current.totalScore > best.totalScore ? current : best
+    ).player];
+}
+
+async function returnToLobby(){
+    await update(dbRef(database, props.gameId), {
+        gameStatus: "lobby"
+    });
 }
 
 // Fonction auxiliaire pour compter les lettres placées
@@ -836,7 +866,7 @@ function checkMove(wordLine) {
         wordsAndValue.push({ "value": spineValue * spineMulti, "isValid": props.listeMots.includes(spineWord.toLowerCase()) })
     }
     playScore.value = wordsAndValue.reduce((total, item) => total + item.value, 0)
-    if(countPlacedLetters() == 7){
+    if (countPlacedLetters() == 7) {
         playScore.value += 50
     }
     return wordsAndValue.every(item => item.isValid);
