@@ -703,7 +703,7 @@ function isValid() {
     if (!(wordLine == false)) {
         console.log("mot possible")
         // Si le plateau est vierge
-        if (gameBoard.value.every(cell => cell === '---------------')) {
+        if (gameBoard.value.every(row => row.every(cell => cell === '-'))) {
             console.log("plateau vierge")
             /* calcul des points du mot */
             // Si l'une des lettres touche le centre

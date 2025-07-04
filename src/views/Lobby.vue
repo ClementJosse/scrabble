@@ -47,7 +47,7 @@ const router = useRouter()
 const route = useRoute()
 const database = getDatabase()
 const gameId = route.params.gameId
-const board = {}
+var board = {}
 const playerLetters = {}
 const playerOrder = {}
 const scores = {}
@@ -80,7 +80,11 @@ function setupGame() {
 
   // Initialisation du plateau : 15 lignes de 15 tirets
   for (let i = 0; i < 15; i++) {
-    board[i] = "---------------"
+    board[i] = {}
+    for (let j = 0; j < 15; j++) {
+
+      board[i][j] = '-'
+    }
   }
 }
 
