@@ -10,7 +10,7 @@
       <div v-if="isStatsVisible"
         class="bg-base2 w-[330px] z-10 shadow-md shadow-base3 rounded-3xl pl-4 py-6 mt-[90px] h-[calc(100vh-210px)] flex flex-col">
         <span
-          class="h-[60px] w-[195px] bg-base3 text-primary text-xl items-center justify-center flex font-semibold rounded-lg ml-[50px]">Statistiques</span>
+          class="h-[40px] w-[195px] bg-base3 text-primary text-xl items-center justify-center flex font-semibold rounded-lg ml-[50px]">Statistiques</span>
         <div class="overflow-y-auto flex-grow min-h-0 custom-scrollbar mt-4">
           <div class="text-center text-rg text-center text-primary font-medium mt-4">Classement</div>
           <div class="bg-base1 rounded-xl shadow-md shadow-base3  w-[190px] mx-auto">
