@@ -56,7 +56,8 @@
         <!-- Rack des lettres -->
         <div
             class="fixed bottom-6 left-1/2 -translate-x-1/2 flex flex-row bg-base2 p-3 w-[745px] h-[115px] justify-between items-center rounded-xl shadow-base3 shadow-md z-50">
-            <div v-if="props.gameData.gameStatus === 'finished'" class="flex flex-col justify-center items-center w-full gap-3">
+            <div v-if="props.gameData.gameStatus === 'finished'"
+                class="flex flex-col justify-center items-center w-full gap-3">
                 <span class="flex flex-row justify-center items-center gap-1 text-primary font-semibold text-xl">
                     <span
                         class="flex flex-row px-3 ml-5 py-1 bg-primary rounded-full text-xl inter-bold text-base1 gap-2 w-fit">
@@ -64,8 +65,12 @@
                     </span>
                     a gagné
                 </span>
-                <span v-if="props.UID !== props.gameData.leader" class="text-secondary text-sm"> En attente du créateur de la partie...</span>
-                <button v-else class="px-4 py-3 bg-secondary rounded-xl text-base1 inter-bold flex items-center justify-center w-[250px] h-[40px]" @click="returnToLobby()"> Retourner au Lobby</button>
+                <span v-if="props.UID !== props.gameData.leader" class="text-secondary text-sm"> En attente du créateur
+                    de la
+                    partie...</span>
+                <button v-else
+                    class="px-4 py-3 bg-secondary rounded-xl text-base1 inter-bold flex items-center justify-center w-[250px] h-[40px]"
+                    @click="returnToLobby()"> Retourner au Lobby</button>
             </div>
             <div v-else class="flex flex-row bg-base2 p-3 w-[745px] h-[115px] justify-between items-center">
                 <div class="w-[170px] flex justify-center">
@@ -161,8 +166,8 @@ async function playMove() {
     const nextIndex = (props.gameData.playerIndex + 1) % props.gameData.playerOrder.length;
 
     // Calculer si on est au prochain tour
-    console.log('nextIndex.value',nextIndex)
-    const updatedTurn = nextIndex === 0 ? props.gameData.turn+1 : props.gameData.turn
+    console.log('nextIndex.value', nextIndex)
+    const updatedTurn = nextIndex === 0 ? props.gameData.turn + 1 : props.gameData.turn
 
     // Compter les lettres placées sur le board
     const placedLettersCount = countPlacedLetters();
@@ -194,6 +199,37 @@ async function playMove() {
     const playerUsedAllLetters = rackLetters.value.length === 0;
     const gameStatus = (bagWasEmpty && playerUsedAllLetters) ? "finished" : "ingame";
 
+    if (gameStatus == "finished") {
+        // Calculer les points des lettres restantes pour chaque joueur
+        let totalRemainingPoints = 0;
+        const playersRemainingPoints = {};
+
+        // Pour chaque joueur, calculer les points de ses lettres restantes
+        Object.entries(updatedPlayerLetters).forEach(([playerId, letters]) => {
+            if (playerId !== props.UID) { // Exclure le joueur actuel qui a vidé son rack
+                const remainingPoints = letters.split('').reduce((sum, letter) => {
+                    return sum + (letterToValue[letter] || 0);
+                }, 0);
+                playersRemainingPoints[playerId] = remainingPoints;
+                totalRemainingPoints += remainingPoints;
+            }
+        });
+
+        // Appliquer les pénalités et bonus de fin de partie
+        Object.entries(playersRemainingPoints).forEach(([playerId, points]) => {
+            // Pénaliser chaque joueur avec ses lettres restantes (points négatifs)
+            if (!updatedScores[playerId]) {
+                updatedScores[playerId] = [];
+            }
+            updatedScores[playerId].push(-points);
+        });
+
+        // Donner le bonus au joueur qui a vidé son rack (somme des points des autres)
+        if (playerUsedAllLetters) {
+            updatedScores[props.UID].push(totalRemainingPoints);
+        }
+    }
+
     // Mettre à jour Firebase
     await update(dbRef(database, props.gameId), {
         board: newBoard,
@@ -217,18 +253,18 @@ async function playMove() {
     }
 }
 
-const getWinner= () => {
-  return props.gameData.idToPlayer[Object.entries(props.gameData.scores)
-    .map(([player, rounds]) => ({
-      player,
-      totalScore: rounds.reduce((sum, score) => sum + score, 0)
-    }))
-    .reduce((best, current) => 
-      current.totalScore > best.totalScore ? current : best
-    ).player];
+const getWinner = () => {
+    return props.gameData.idToPlayer[Object.entries(props.gameData.scores)
+        .map(([player, rounds]) => ({
+            player,
+            totalScore: rounds.reduce((sum, score) => sum + score, 0)
+        }))
+        .reduce((best, current) =>
+            current.totalScore > best.totalScore ? current : best
+        ).player];
 }
 
-async function returnToLobby(){
+async function returnToLobby() {
     await update(dbRef(database, props.gameId), {
         gameStatus: "lobby"
     });
