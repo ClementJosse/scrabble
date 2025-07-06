@@ -27,7 +27,7 @@
                             Dictionnaire </span>
                         <span class="flex w-[295px]">*basé sur l'ODS 9 du 1er janvier 2024</span>
                         <div class="relative w-[295px]">
-                            <input ref="input" v-model="mot" type="text" placeholder="Rechercher un mot..."
+                            <input ref="inputRef" v-model="mot" type="text" placeholder="Rechercher un mot..."
                                 class="w-full rounded-lg shadow-md shadow-base3 p-3 pr-12 inter-bold text-xl text-bold bg-base1 border-none outline-none placeholder-base3 placeholder-opacity-100 placeholder:font-medium"
                                 :class="[mot === '' || isSearching ? 'shadow-base3 text-primary' : motValide ? 'shadow-blue text-strongblue' : 'shadow-red text-strongred']" />
                             <div v-if="mot" @click="clearInput"
@@ -76,7 +76,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from 'vue'
+import { nextTick, onMounted, ref, watch } from 'vue'
 import { getDatabase, ref as dbRef, onValue, set, get, update, onDisconnect, serverTimestamp } from 'firebase/database'
 const database = getDatabase()
 
@@ -170,6 +170,50 @@ function rechercherMot(motBrut) {
 function copyWord(suggestion) {
     mot.value = suggestion
 }
+
+//loop pour garder l'input focus constant
+const inputRef = ref(null)
+let keepFocusing = false
+
+function focusInput() {
+    if (inputRef.value) {
+        inputRef.value.focus()
+    }
+}
+
+function focusLoop() {
+    if (!keepFocusing) return
+    nextTick(() => {
+        focusInput()
+        requestAnimationFrame(focusLoop)
+    })
+}
+
+watch(inputRef, (el) => {
+    if (el && isDicoVisible.value) {
+        keepFocusing = true
+        focusLoop()
+    }
+})
+
+watch(isDicoVisible, (visible) => {
+    if (visible && inputRef.value) {
+        keepFocusing = true
+        focusLoop()
+    } else {
+        keepFocusing = false
+    }
+})
+
+
+onMounted(() => {
+    if (isDicoVisible.value) {
+        nextTick(() => {
+            focusInput()
+        })
+    }
+})
+
 </script>
 
 <style>

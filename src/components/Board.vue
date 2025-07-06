@@ -144,7 +144,10 @@ const props = defineProps({
     listeMots: Object
 })
 
-const bagSize = ref(Object.values(props.gameData.bagTile).reduce((a, b) => a + b, 0))
+const bagSize = computed(() => {
+    return Object.values(props.gameData?.bagTile || {}).reduce((a, b) => a + b, 0)
+})
+
 const database = getDatabase()
 
 async function playMove() {
@@ -629,23 +632,34 @@ const handleRackLetterDragOver = (targetIndex, event) => {
 
 const handleRackLetterDrop = (targetIndex, event) => {
     event.preventDefault()
-    event.stopPropagation() // Empêcher la propagation vers le drop du rack global
+    event.stopPropagation()
 
-    if (!draggedItem.value || dragSource.value !== 'rack' || dragSourceIndex.value === targetIndex) {
+    if (
+        !draggedItem.value ||
+        dragSource.value !== 'rack' ||
+        dragSourceIndex.value === targetIndex
+    ) {
         return
     }
 
-    // Échange des lettres
-    // TODO ne pas echanger mais faire une insertion avec animation de translation
     const sourceIndex = dragSourceIndex.value
-    const targetLetter = rackLetters.value[targetIndex]
-    const sourceLetter = rackLetters.value[sourceIndex]
+    const letterToMove = rackLetters.value[sourceIndex]
 
-    // Effectuer l'échange
-    rackLetters.value[sourceIndex] = targetLetter
-    rackLetters.value[targetIndex] = sourceLetter
+    // Supprimer la lettre de sa position d'origine
+    rackLetters.value.splice(sourceIndex, 1)
 
-    // Reset
+    // Calculer la nouvelle position après suppression
+    let insertIndex = targetIndex
+    if (sourceIndex < targetIndex) {
+        insertIndex = targetIndex // l'élément ciblé a "glissé" d'une position vers la gauche après suppression
+    } else {
+        insertIndex = targetIndex
+    }
+
+    // Insérer la lettre à la nouvelle position
+    rackLetters.value.splice(insertIndex, 0, letterToMove)
+
+    // Reset des états de drag
     draggedItem.value = null
     dragSource.value = null
     dragSourceIndex.value = null
