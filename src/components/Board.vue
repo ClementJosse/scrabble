@@ -395,7 +395,7 @@ watch(
     (newBoard, oldBoard) => {
         if (newBoard && JSON.stringify(newBoard) !== JSON.stringify(oldBoard)) {
             updateBoard(newBoard)
-            
+
             for (let i = 0; i < 15; i++) {
                 for (let j = 0; j < 15; j++) {
                     if (gameBoard.value[i][j] == '-' && board.value[i][j] != '') {
@@ -587,6 +587,10 @@ const handleCellDrop = (row, col, event) => {
 
     // Déclencher la validation avec debounce
     triggerValidation()
+
+    const audio = new Audio();
+    audio.src = new URL('@/assets/tile.mp3', import.meta.url).href;
+    audio.play()
 }
 
 // Drop sur le rack
@@ -619,6 +623,10 @@ const handleRackDrop = (event) => {
 
     // Déclencher la validation avec debounce
     triggerValidation()
+
+    const audio = new Audio();
+    audio.src = new URL('@/assets/tile.mp3', import.meta.url).href;
+    audio.play()
 }
 
 const handleRackLetterDragOver = (targetIndex, event) => {
@@ -664,6 +672,10 @@ const handleRackLetterDrop = (targetIndex, event) => {
     dragSource.value = null
     dragSourceIndex.value = null
     isDragging.value = false
+
+    const audio = new Audio();
+    audio.src = new URL('@/assets/tile.mp3', import.meta.url).href;
+    audio.play()
 }
 
 const shuffleArray = (array) => {
@@ -680,6 +692,9 @@ const shuffleRackLetters = () => {
     if (rackLetters.value.length > 1) {
         rackLetters.value = shuffleArray(rackLetters.value)
     }
+    const audio = new Audio();
+    audio.src = new URL('@/assets/tile.mp3', import.meta.url).href;
+    audio.play()
 }
 
 // Variables pour le debounce et la mémorisation de isValid
@@ -715,6 +730,10 @@ const retrieveLetters = () => {
 
     // Réinitialiser le score du jeu
     playScore.value = 0;
+
+    const audio = new Audio();
+    audio.src = new URL('@/assets/tile.mp3', import.meta.url).href;
+    audio.play()
 };
 
 
